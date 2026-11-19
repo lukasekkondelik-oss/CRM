@@ -37,5 +37,8 @@ Hledej řádky `NOTICE: OK ...`; slovo `MELO SELHAT` se objeví jen při chybě.
   klikací `tel:`/`mailto:`, serverové hledání ve výběrech osob a firem.
 - **Fáze 4** – Aktivity (Dnes / Po termínu / Tento týden / Vše, kalendář týden/měsíc), modal „Naplánovat další
   aktivitu?“, odznak v navigaci, další krok na kartě dealu.
+- **Fáze 5** – Dashboard (KPI, funnel, výhry/prohry po měsících, seznamy, filtr období a vlastníka).
 
-Roadmapa Fází 5–7 je v zadání projektu.
+Testy: `npm test` (jednotkové testy výpočtů).
+
+Roadmapa Fází 6–7 je v zadání projektu.

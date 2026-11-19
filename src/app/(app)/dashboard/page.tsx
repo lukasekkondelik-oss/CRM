@@ -1,19 +1,14 @@
 import type { Metadata } from "next";
 import { BarChart3 } from "lucide-react";
-import { PageHeader } from "@/components/layout/page-header";
+import { DashboardView } from "@/components/dashboard/dashboard-view";
 import { EmptyState } from "@/components/ui/empty-state";
+import { loadDashboard } from "@/lib/data/dashboard";
+import { todayInPrague } from "@/lib/deals/helpers";
 
 export const metadata: Metadata = { title: "Dashboard" };
 
-export default function DashboardPage() {
-  return (
-    <>
-      <PageHeader title="Dashboard" description="Přehled pipeline, výkonu a dnešních úkolů." />
-      <EmptyState
-        icon={BarChart3}
-        title="Dashboard se zaplní, jakmile přibydou dealy"
-        description="KPI, funnel a grafy výhra/prohra přijdou ve Fázi 5. Zatím je připravený workspace a výchozí pipeline."
-      />
-    </>
-  );
+export default async function DashboardPage() {
+  const data = await loadDashboard();
+  if (!data) return <EmptyState icon={BarChart3} title="Dashboard se nepodařilo načíst" description="Zkus stránku obnovit." />;
+  return <DashboardView {...data} today={todayInPrague()} />;
 }
