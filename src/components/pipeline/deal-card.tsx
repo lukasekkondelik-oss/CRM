@@ -2,6 +2,8 @@ import { Building2, User } from "lucide-react";
 import { Avatar } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { formatCZK } from "@/lib/format";
+import { relativeDay } from "@/lib/dates";
+import { TYPE_ICON } from "@/components/activities/activity-dialog";
 import type { DealVM, Member, NextState } from "@/lib/deals/helpers";
 import type { Label } from "@/lib/types";
 import { NextStepIcon } from "./next-step-icon";
@@ -13,10 +15,12 @@ export interface CardInfo {
   labels: Label[];
   rotting: boolean;
   state: NextState;
+  today: string;
 }
 
 export function DealCard({ deal, info, className, ...rest }: { deal: DealVM; info: CardInfo } & React.ComponentProps<"div">) {
-  const { org, person, owner, labels, rotting, state } = info;
+  const { org, person, owner, labels, rotting, state, today } = info;
+  const NextIcon = deal.nextType ? TYPE_ICON[deal.nextType] : null;
   return (
     <div
       {...rest}
@@ -38,6 +42,12 @@ export function DealCard({ deal, info, className, ...rest }: { deal: DealVM; inf
         <p className="mt-1 flex items-center gap-1.5 truncate text-xs text-muted-foreground">
           {org ? <Building2 className="size-3 shrink-0" /> : <User className="size-3 shrink-0" />}
           <span className="truncate">{[org, person].filter(Boolean).join(" · ")}</span>
+        </p>
+      )}
+      {deal.nextSubject && NextIcon && (
+        <p className={cn("mt-1.5 flex items-center gap-1.5 truncate text-xs", state === "overdue" ? "font-medium text-danger" : "text-muted-foreground")}>
+          <NextIcon className="size-3 shrink-0" />
+          <span className="truncate">{deal.nextSubject}{deal.nextDue ? ` · ${relativeDay(deal.nextDue, today)}` : ""}</span>
         </p>
       )}
       <div className="mt-3 flex items-center justify-between gap-2">

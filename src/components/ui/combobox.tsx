@@ -81,7 +81,7 @@ export function Combobox({ options, value, onChange, search, onCreate, placehold
   };
 
   return (
-    <div ref={root} className={cn("relative", className)}>
+    <div ref={root} data-combobox-open={open ? "true" : undefined} className={cn("relative", className)}>
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}

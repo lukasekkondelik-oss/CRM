@@ -77,6 +77,7 @@ export function Board(props: Props) {
       labels: d.labelIds.map((id) => labelMap.get(id)).filter((l): l is Label => !!l),
       rotting: isRotting(d, stageMap.get(d.stage_id), now),
       state: nextState(d, today),
+      today,
     };
   };
 

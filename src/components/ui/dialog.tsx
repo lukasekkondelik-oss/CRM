@@ -17,6 +17,10 @@ export function DialogContent({
     <DialogPrimitive.Portal>
       <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/50" />
       <DialogPrimitive.Content
+        // Escape v rozbaleném výběru (Combobox) zavře jen výběr, ne celý dialog
+        onEscapeKeyDown={(e) => {
+          if ((e.target as Element | null)?.closest?.('[data-combobox-open="true"]')) e.preventDefault();
+        }}
         className={cn(
           "fixed left-1/2 top-1/2 z-50 max-h-[90dvh] w-[calc(100%-2rem)] max-w-lg -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-xl border bg-card p-6 shadow-pop focus:outline-none",
           className,

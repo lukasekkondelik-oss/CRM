@@ -1,7 +1,9 @@
 "use client";
 
 import { useMemo, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { ActivityDialog } from "@/components/activities/activity-dialog";
 import { Calendar, CheckCircle2, Circle, Clock, History, Loader2, Mail, MessageSquare, Phone, Plus, StickyNote, Users, Flag, ListChecks } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -44,6 +46,8 @@ interface Props {
 }
 
 export function DealActivity({ deal, activities, setActivities, notes, setNotes, history, members, userId, today }: Props) {
+  const router = useRouter();
+  const [dialog, setDialog] = useState<{ mode: "next" | "edit"; activity?: Activity } | null>(null);
   const [tab, setTab] = useState<"activity" | "note" | "history">("activity");
   const [showAllDone, setShowAllDone] = useState(false);
   const subjectRef = useRef<HTMLInputElement>(null);
@@ -68,11 +72,9 @@ export function DealActivity({ deal, activities, setActivities, notes, setNotes,
       toast.error("Aktivitu se nepodařilo uložit.");
       return;
     }
-    if (next && planned.length === 1 && deal.status === "open") {
-      toast.warning("Deal teď nemá další krok.", {
-        action: { label: "Naplánovat", onClick: () => { setTab("activity"); setTimeout(() => subjectRef.current?.focus(), 50); } },
-      });
-    }
+    router.refresh(); // obnoví odznak v navigaci
+    // jádro workflow: po dokončení aktivity nabídnout další krok (u uzavřeného dealu ne)
+    if (next && deal.status === "open") setDialog({ mode: "next" });
   }
 
   const timeline = useMemo(() => {
@@ -108,7 +110,7 @@ export function DealActivity({ deal, activities, setActivities, notes, setNotes,
                     <button type="button" aria-label="Označit jako hotové" onClick={() => toggleDone(a)} className="text-muted-foreground hover:text-success"><Circle className="size-5" /></button>
                     <Icon className={cn("size-4 shrink-0", overdue ? "text-danger" : "text-muted-foreground")} />
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-medium">{a.subject}</p>
+                      <button type="button" onClick={() => setDialog({ mode: "edit", activity: a })} className="block max-w-full truncate text-left text-sm font-medium hover:text-primary">{a.subject}</button>
                       <p className="text-xs text-muted-foreground">{ACTIVITY_TYPES[a.type]} · {memberName(a.assigned_to)}</p>
                     </div>
                     <span className={cn("flex items-center gap-1 whitespace-nowrap text-xs", overdue ? "font-medium text-danger" : "text-muted-foreground")}>
@@ -150,7 +152,7 @@ export function DealActivity({ deal, activities, setActivities, notes, setNotes,
           ))}
         </div>
         <CardContent className="pt-4">
-          {tab === "activity" && <ActivityForm deal={deal} members={members} userId={userId} subjectRef={subjectRef} onCreated={(a) => setActivities((as) => [...as, a])} />}
+          {tab === "activity" && <ActivityForm deal={deal} members={members} userId={userId} subjectRef={subjectRef} onCreated={(a) => { setActivities((as) => [...as, a]); router.refresh(); }} />}
           {tab === "note" && <NoteForm dealId={deal.id} onCreated={(n) => setNotes((ns) => [n, ...ns])} />}
           {tab === "history" && (
             history.length === 0 ? <p className="text-sm text-muted-foreground">Zatím žádné změny.</p> : (
@@ -177,6 +179,19 @@ export function DealActivity({ deal, activities, setActivities, notes, setNotes,
           )}
         </CardContent>
       </Card>
+      <ActivityDialog
+        open={dialog !== null}
+        onOpenChange={(o) => !o && setDialog(null)}
+        mode={dialog?.mode ?? "next"}
+        members={members}
+        userId={userId}
+        today={today}
+        activity={dialog?.activity}
+        deal={{ id: deal.id, title: deal.title, person_id: deal.person_id, organization_id: deal.organization_id }}
+        onSaved={(a) => { setActivities((as) => (as.some((x) => x.id === a.id) ? as.map((x) => (x.id === a.id ? a : x)) : [...as, a])); router.refresh(); }}
+        onDeleted={(id) => { setActivities((as) => as.filter((x) => x.id !== id)); router.refresh(); }}
+        onComplete={(a) => toggleDone(a)}
+      />
     </div>
   );
 }

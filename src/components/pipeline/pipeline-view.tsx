@@ -109,7 +109,7 @@ export function PipelineView({ pipelines, pipeline, stages, initialDeals, member
     const position = inStage.length ? Math.min(...inStage.map((d) => d.position)) - 1 : 0;
     try {
       const row = await insertDeal({ ...input, pipeline_id: pipeline.id, position });
-      setDeals((ds) => [{ ...row, value: Number(row.value), labelIds: [], openActivities: 0, nextDue: null }, ...ds]);
+      setDeals((ds) => [{ ...row, value: Number(row.value), labelIds: [], openActivities: 0, nextDue: null, nextSubject: null, nextType: null }, ...ds]);
       toast.success("Deal vytvořen");
       return true;
     } catch {

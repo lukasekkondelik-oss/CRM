@@ -8,8 +8,8 @@ const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin", "lat
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin", "latin-ext"] });
 
 export const metadata: Metadata = {
-  title: { default: "Pipeline CRM", template: "%s · Pipeline CRM" },
-  description: "CRM zaměřené na prodejní pipeline, dealy a aktivity.",
+  title: { default: "nexdeals", template: "%s · nexdeals" },
+  description: "nexdeals – CRM zaměřené na prodejní pipeline, dealy a aktivity.",
 };
 
 export const viewport: Viewport = { width: "device-width", initialScale: 1 };

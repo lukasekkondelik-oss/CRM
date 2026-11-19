@@ -1,4 +1,4 @@
-# Pipeline CRM
+# nexdeals
 
 CRM zaměřené na prodejní pipeline, dealy a aktivity (funkčně podobné Pipedrive). UI je česky, měna CZK.
 Stack: Next.js 16 (App Router) + TypeScript, Supabase (Postgres, Auth, RLS), Tailwind CSS v4, @dnd-kit, Recharts.
@@ -35,5 +35,7 @@ Hledej řádky `NOTICE: OK ...`; slovo `MELO SELHAT` se objeví jen při chybě.
 
 - **Fáze 3** – Osoby a Firmy (hledání, řazení, stránkování), detaily s navázanými dealy, aktivitami a poznámkami,
   klikací `tel:`/`mailto:`, serverové hledání ve výběrech osob a firem.
+- **Fáze 4** – Aktivity (Dnes / Po termínu / Tento týden / Vše, kalendář týden/měsíc), modal „Naplánovat další
+  aktivitu?“, odznak v navigaci, další krok na kartě dealu.
 
-Roadmapa Fází 4–7 je v zadání projektu.
+Roadmapa Fází 5–7 je v zadání projektu.

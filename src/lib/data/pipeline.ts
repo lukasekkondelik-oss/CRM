@@ -1,7 +1,7 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
 import type { DealVM, Member, OrgLite, PersonLite } from "@/lib/deals/helpers";
-import type { Deal, Label, Pipeline, Stage } from "@/lib/types";
+import type { ActivityType, Deal, Label, Pipeline, Stage } from "@/lib/types";
 
 const LIMIT = 5000;
 
@@ -34,18 +34,21 @@ export async function loadPipelineData(requestedPipelineId?: string) {
     supabase.from("stages").select("*").eq("pipeline_id", pipeline.id).order("position"),
     supabase.from("deals").select("*").eq("pipeline_id", pipeline.id).order("position").limit(LIMIT),
     supabase.from("deal_labels").select("deal_id, label_id").limit(LIMIT * 4),
-    supabase.from("activities").select("deal_id, due_date").eq("done", false).not("deal_id", "is", null).limit(LIMIT * 4),
+    supabase.from("activities").select("deal_id, due_date, due_time, subject, type").eq("done", false).not("deal_id", "is", null).limit(LIMIT * 4),
   ]);
 
   const labelsByDeal = new Map<string, string[]>();
   for (const dl of dealLabelsRes.data ?? []) {
     labelsByDeal.set(dl.deal_id, [...(labelsByDeal.get(dl.deal_id) ?? []), dl.label_id]);
   }
-  const act = new Map<string, { count: number; next: string | null }>();
+  type Next = { count: number; due: string | null; time: string; subject: string | null; type: ActivityType | null };
+  const act = new Map<string, Next>();
   for (const a of activitiesRes.data ?? []) {
-    const cur = act.get(a.deal_id) ?? { count: 0, next: null };
+    const cur = act.get(a.deal_id) ?? { count: 0, due: null, time: "", subject: null, type: null };
     cur.count += 1;
-    if (a.due_date && (!cur.next || a.due_date < cur.next)) cur.next = a.due_date;
+    // nejbližší termín; aktivity bez termínu jdou až za ty s termínem
+    const better = !cur.subject || (a.due_date && (!cur.due || a.due_date < cur.due || (a.due_date === cur.due && (a.due_time ?? "") < cur.time)));
+    if (better) { cur.due = a.due_date; cur.time = a.due_time ?? ""; cur.subject = a.subject; cur.type = a.type; }
     act.set(a.deal_id, cur);
   }
 
@@ -54,7 +57,9 @@ export async function loadPipelineData(requestedPipelineId?: string) {
     value: Number(d.value),
     labelIds: labelsByDeal.get(d.id) ?? [],
     openActivities: act.get(d.id)?.count ?? 0,
-    nextDue: act.get(d.id)?.next ?? null,
+    nextDue: act.get(d.id)?.due ?? null,
+    nextSubject: act.get(d.id)?.subject ?? null,
+    nextType: act.get(d.id)?.type ?? null,
   }));
 
   // Kontakty načítáme jen ty, na které se dealy odkazují (zbytek řeší serverové hledání).

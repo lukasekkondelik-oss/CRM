@@ -12,13 +12,16 @@ import { cn } from "@/lib/utils";
 import { NAV_ITEMS } from "./nav-items";
 import { ThemeToggle } from "./theme-toggle";
 
+export interface ActivityBadge { today: number; overdue: number }
+
 interface Props {
+  activityBadge?: ActivityBadge;
   user: { fullName: string; email: string | null; avatarUrl: string | null; role: "admin" | "member" };
   workspaceName: string;
   children: React.ReactNode;
 }
 
-function SidebarContent({ user, workspaceName, onNavigate }: Omit<Props, "children"> & { onNavigate?: () => void }) {
+function SidebarContent({ user, workspaceName, activityBadge, onNavigate }: Omit<Props, "children"> & { onNavigate?: () => void }) {
   const pathname = usePathname();
   return (
     <div className="flex h-full flex-col">
@@ -46,7 +49,21 @@ function SidebarContent({ user, workspaceName, onNavigate }: Omit<Props, "childr
               )}
             >
               <Icon className="size-[18px]" />
-              {label}
+              <span className="flex-1">{label}</span>
+              {href === "/aktivity" && activityBadge && activityBadge.today + activityBadge.overdue > 0 && (
+                <span
+                  title={`Dnes: ${activityBadge.today}, po termínu: ${activityBadge.overdue}`}
+                  aria-label={`Aktivity k vyřízení: dnes ${activityBadge.today}, po termínu ${activityBadge.overdue}`}
+                  className={cn(
+                    "flex items-center gap-1 rounded-full px-1.5 text-[11px] font-semibold tabular-nums",
+                    activityBadge.overdue > 0 ? "bg-danger text-white" : "bg-primary text-primary-foreground",
+                  )}
+                >
+                  {activityBadge.overdue > 0 && <span>{activityBadge.overdue}</span>}
+                  {activityBadge.overdue > 0 && activityBadge.today > 0 && <span className="opacity-60">/</span>}
+                  {activityBadge.today > 0 && <span>{activityBadge.today}</span>}
+                </span>
+              )}
             </Link>
           );
         })}
@@ -74,14 +91,14 @@ function SidebarContent({ user, workspaceName, onNavigate }: Omit<Props, "childr
   );
 }
 
-export function AppShell({ user, workspaceName, children }: Props) {
+export function AppShell({ user, workspaceName, activityBadge, children }: Props) {
   const [open, setOpen] = useState(false);
 
   return (
     <div className="min-h-dvh lg:pl-64">
       {/* Desktop sidebar */}
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 border-r bg-sidebar lg:block">
-        <SidebarContent user={user} workspaceName={workspaceName} />
+        <SidebarContent user={user} workspaceName={workspaceName} activityBadge={activityBadge} />
       </aside>
 
       {/* Mobilní horní lišta */}
@@ -110,7 +127,7 @@ export function AppShell({ user, workspaceName, children }: Props) {
             >
               <X />
             </Button>
-            <SidebarContent user={user} workspaceName={workspaceName} onNavigate={() => setOpen(false)} />
+            <SidebarContent user={user} workspaceName={workspaceName} activityBadge={activityBadge} onNavigate={() => setOpen(false)} />
           </aside>
         </div>
       )}

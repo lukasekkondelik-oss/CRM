@@ -28,3 +28,11 @@ export async function searchOrgs(q: string): Promise<ComboOption[]> {
   const { data } = await query.order("name").limit(20);
   return ((data ?? []) as OrgLite[]).map((o) => ({ id: o.id, label: o.name, data: o }));
 }
+
+/** Hledání dealů (podle názvu) pro vazbu aktivity. */
+export async function searchDeals(q: string): Promise<ComboOption[]> {
+  let query = createClient().from("deals").select("id, title, person_id, organization_id, status");
+  for (const f of wordFilters(q, ["title"])) query = query.or(f);
+  const { data } = await query.eq("status", "open").order("created_at", { ascending: false }).limit(20);
+  return ((data ?? []) as { id: string; title: string }[]).map((d) => ({ id: d.id, label: d.title, data: d }));
+}

@@ -1,4 +1,4 @@
-import type { Deal, Stage } from "@/lib/types";
+import type { ActivityType, Deal, Stage } from "@/lib/types";
 
 /** Deal + data odvozená pro zobrazení. */
 export interface DealVM extends Deal {
@@ -6,6 +6,9 @@ export interface DealVM extends Deal {
   openActivities: number;
   /** nejbližší termín nedokončené aktivity (YYYY-MM-DD) nebo null */
   nextDue: string | null;
+  /** předmět a typ nejbližší nedokončené aktivity (pro kartu) */
+  nextSubject: string | null;
+  nextType: ActivityType | null;
 }
 
 export interface Member { id: string; full_name: string; avatar_url: string | null }
