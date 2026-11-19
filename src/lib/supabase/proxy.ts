@@ -2,7 +2,8 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { getSupabaseEnv } from "./env";
 
-const PUBLIC_PREFIXES = ["/login", "/registrace", "/auth"];
+// /api si ověřuje API klíč samo (Authorization: Bearer), cookies session se tu nepoužívá
+const PUBLIC_PREFIXES = ["/login", "/registrace", "/auth", "/api"];
 
 /** Obnoví Supabase session v cookies a přesměruje nepřihlášené na /login. */
 export async function updateSession(request: NextRequest) {

@@ -31,7 +31,7 @@ export function ContactFeed({ activities, notes: initialNotes, deals, members, t
   const [content, setContent] = useState("");
   const [busy, setBusy] = useState(false);
   const dealTitle = new Map(deals.map((d) => [d.id, d.title]));
-  const who = (id: string | null) => members.find((m) => m.id === id)?.full_name ?? "Neznámý";
+  const who = (id: string | null) => (id ? members.find((m) => m.id === id)?.full_name ?? "Neznámý" : "API");
 
   async function addNote(e: React.FormEvent) {
     e.preventDefault();

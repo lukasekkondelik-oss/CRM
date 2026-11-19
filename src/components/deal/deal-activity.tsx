@@ -51,7 +51,8 @@ export function DealActivity({ deal, activities, setActivities, notes, setNotes,
   const [tab, setTab] = useState<"activity" | "note" | "history">("activity");
   const [showAllDone, setShowAllDone] = useState(false);
   const subjectRef = useRef<HTMLInputElement>(null);
-  const memberName = (id: string | null) => members.find((m) => m.id === id)?.full_name ?? "Neznámý";
+  // změny provedené přes API (service role) nemají přihlášeného uživatele → „API“
+  const memberName = (id: string | null) => (id ? members.find((m) => m.id === id)?.full_name ?? "Neznámý" : "API");
 
   const planned = useMemo(
     () => activities.filter((a) => !a.done).sort((a, b) => (a.due_date ?? "9999").localeCompare(b.due_date ?? "9999") || (a.due_time ?? "").localeCompare(b.due_time ?? "")),

@@ -42,7 +42,29 @@ Hledej řádky `NOTICE: OK ...`; slovo `MELO SELHAT` se objeví jen při chybě.
 - **Fáze 6** – Nastavení (pipelines a fáze s drag & drop, labely, tým a pozvánky), globální hledání Ctrl/Cmd+K,
   import CSV s mapováním a náhledem, export CSV. Vyžaduje migraci `20261119000200_phase6_invites_search.sql`.
 
-Testy: `npm test` (jednotkové testy výpočtů).
+## API a Claude (MCP)
+
+Aplikaci lze ovládat přes **REST API** (`/api/v1`) a **MCP server** (`/api/mcp`), takže s CRM umí pracovat Claude Code,
+Claude Desktop, n8n, Make nebo vlastní skripty.
+
+1. V Supabase spusť migraci `supabase/migrations/20261120000000_api_keys.sql`.
+2. Ve Vercelu přidej tajnou proměnnou `SUPABASE_SERVICE_ROLE_KEY` (Supabase → Project Settings → API Keys → *service_role / secret*,
+   v nastavení proměnné zaškrtni *Sensitive*) a proveď nový deploy. Klíč nikdy nedávej do proměnné s `NEXT_PUBLIC_`.
+3. V aplikaci: **Nastavení → API a Claude** → vytvoř klíč (jen čtení, nebo čtení + zápis) a zkopíruj hotový příkaz:
+
+```bash
+claude mcp add --transport http nexdeals https://TVOJE-DOMENA/api/mcp --header "Authorization: Bearer nxd_…"
+```
+
+- Dokumentace endpointů: `/api/v1/openapi.json` (OpenAPI 3.1, veřejné, bez dat).
+- Klíč jedná jménem svého uživatele, vidí jen jeho workspace a po odebrání uživatele z týmu přestane fungovat. V DB je jen SHA-256 otisk.
+- Server používá service role (obchází RLS), proto je **každý dotaz explicitně omezený na `workspace_id` klíče**
+  a test `npm run test:api` to u všech dotazů automaticky kontroluje.
+- MCP záměrně nenabízí mazání dealů, osob ani firem. Limit: 120 požadavků/min na klíč.
+- Webový konektor claude.ai vyžaduje OAuth, to zatím není podporované.
+
+Testy: `npm test` (jednotkové), `npm run test:api` (e2e API a MCP proti falešnému PostgREST).
+
 
 - **Fáze 7** – polish: skeletony všech sekcí, chybové stránky, tmavý toast, hlavičky zabezpečení, ikona, skip-link,
   výkon (líné načtení hledání a grafů, memoizované karty při tahu), kontrola mobilu a tmavého režimu.

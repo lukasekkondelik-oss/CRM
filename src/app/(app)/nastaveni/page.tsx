@@ -5,7 +5,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { loadSettings } from "@/lib/data/settings";
 
 export const metadata: Metadata = { title: "Nastavení" };
-const TABS = ["team", "pipelines", "labels", "import"] as const;
+const TABS = ["team", "pipelines", "labels", "import", "api"] as const;
 
 export default async function SettingsPage({ searchParams }: { searchParams: Promise<{ tab?: string }> }) {
   const { tab } = await searchParams;

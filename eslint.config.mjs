@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // testovací skripty (CommonJS fake server, e2e harness)
+    "tests/api/**",
   ]),
 ]);
 

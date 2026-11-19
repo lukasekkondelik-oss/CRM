@@ -1,22 +1,24 @@
 "use client";
 
 import { useState } from "react";
-import { FileSpreadsheet, GitBranch, Tag, Users } from "lucide-react";
+import { Bot, FileSpreadsheet, GitBranch, Tag, Users } from "lucide-react";
 import { PageHeader } from "@/components/layout/page-header";
 import type { loadSettings } from "@/lib/data/settings";
 import { cn } from "@/lib/utils";
+import { ApiSettings } from "./api-settings";
 import { ImportExport } from "./import-export";
 import { LabelsSettings } from "./labels-settings";
 import { PipelinesSettings } from "./pipelines-settings";
 import { TeamSettings } from "./team-settings";
 
 type Data = NonNullable<Awaited<ReturnType<typeof loadSettings>>>;
-type Tab = "team" | "pipelines" | "labels" | "import";
+type Tab = "team" | "pipelines" | "labels" | "import" | "api";
 const TABS: { key: Tab; label: string; icon: typeof Users }[] = [
   { key: "team", label: "Workspace a tým", icon: Users },
   { key: "pipelines", label: "Pipelines", icon: GitBranch },
   { key: "labels", label: "Labely", icon: Tag },
   { key: "import", label: "Import a export", icon: FileSpreadsheet },
+  { key: "api", label: "API a Claude", icon: Bot },
 ];
 
 export function SettingsView({ data, initialTab }: { data: Data; initialTab: Tab }) {
@@ -35,6 +37,7 @@ export function SettingsView({ data, initialTab }: { data: Data; initialTab: Tab
       </div>
       {tab === "team" && <TeamSettings isAdmin={data.isAdmin} userId={data.userId} workspace={data.workspace} members={data.members} invitations={data.invitations} invitesAvailable={data.invitesAvailable} />}
       {tab === "pipelines" && <PipelinesSettings isAdmin={data.isAdmin} pipelines={data.pipelines} stages={data.stages} dealsByStage={data.dealsByStage} />}
+      {tab === "api" && <ApiSettings apiKeys={data.apiKeys} apiKeysAvailable={data.apiKeysAvailable} apiConfigured={data.apiConfigured} endpoints={data.endpoints} mcpTools={data.mcpTools} />}
       {tab === "labels" && <LabelsSettings labels={data.labels} usage={data.labelUsage} />}
       {tab === "import" && <ImportExport members={data.members.map((m) => ({ id: m.id, full_name: m.full_name, email: m.email }))} userId={data.userId} pipelines={data.pipelines} stages={data.stages} />}
     </>
