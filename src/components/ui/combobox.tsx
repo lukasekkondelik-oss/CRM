@@ -4,12 +4,14 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Check, ChevronDown, Plus, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export interface ComboOption { id: string; label: string; sub?: string }
+export interface ComboOption { id: string; label: string; sub?: string; data?: unknown }
 
 interface Props {
   options: ComboOption[];
   value: string | null;
-  onChange: (id: string | null) => void;
+  onChange: (id: string | null, option?: ComboOption) => void;
+  /** Serverové hledání (s debounce). Bez zadaného textu se zobrazí `options`. */
+  search?: (q: string) => Promise<ComboOption[]>;
   /** Když je zadáno, nabídne vytvoření nové položky z hledaného textu. */
   onCreate?: (query: string) => Promise<string | null | void>;
   placeholder?: string;
@@ -19,11 +21,36 @@ interface Props {
   ghost?: boolean;
 }
 
-export function Combobox({ options, value, onChange, onCreate, placeholder = "Vybrat…", createLabel = "Vytvořit", className, ghost }: Props) {
+export function Combobox({ options, value, onChange, search, onCreate, placeholder = "Vybrat…", createLabel = "Vytvořit", className, ghost }: Props) {
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState("");
   const [busy, setBusy] = useState(false);
+  const [remote, setRemote] = useState<ComboOption[] | null>(null);
+  const [loading, setLoading] = useState(false);
   const root = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open || !search) return;
+    const term = q.trim();
+    let cancelled = false;
+    const timer = setTimeout(async () => {
+      if (!term) {
+        if (!cancelled) setRemote(null);
+        return;
+      }
+      setLoading(true);
+      try {
+        const res = await search(term);
+        if (!cancelled) setRemote(res);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }, 250);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [q, open, search]);
 
   useEffect(() => {
     if (!open) return;
@@ -41,13 +68,14 @@ export function Combobox({ options, value, onChange, onCreate, placeholder = "Vy
 
   const current = options.find((o) => o.id === value);
   const filtered = useMemo(() => {
+    if (search && q.trim() && remote) return remote;
     const s = q.trim().toLowerCase();
     return (s ? options.filter((o) => (o.label + " " + (o.sub ?? "")).toLowerCase().includes(s)) : options).slice(0, 50);
-  }, [options, q]);
-  const canCreate = !!onCreate && q.trim().length > 0 && !options.some((o) => o.label.toLowerCase() === q.trim().toLowerCase());
+  }, [options, q, search, remote]);
+  const canCreate = !!onCreate && q.trim().length > 0 && !loading && !filtered.some((o) => o.label.toLowerCase() === q.trim().toLowerCase());
 
-  const pick = (id: string | null) => {
-    onChange(id);
+  const pick = (id: string | null, option?: ComboOption) => {
+    onChange(id, option);
     setOpen(false);
     setQ("");
   };
@@ -80,7 +108,7 @@ export function Combobox({ options, value, onChange, onCreate, placeholder = "Vy
             onKeyDown={(e) => {
               if (e.key === "Enter") {
                 e.preventDefault();
-                if (filtered[0] && !canCreate) pick(filtered[0].id);
+                if (filtered[0] && !canCreate) pick(filtered[0].id, filtered[0]);
               }
             }}
           />
@@ -94,7 +122,7 @@ export function Combobox({ options, value, onChange, onCreate, placeholder = "Vy
             )}
             {filtered.map((o) => (
               <li key={o.id}>
-                <button type="button" role="option" aria-selected={o.id === value} onClick={() => pick(o.id)} className="flex w-full items-center justify-between gap-2 rounded-md px-2 py-1.5 text-left text-sm hover:bg-muted">
+                <button type="button" role="option" aria-selected={o.id === value} onClick={() => pick(o.id, o)} className="flex w-full items-center justify-between gap-2 rounded-md px-2 py-1.5 text-left text-sm hover:bg-muted">
                   <span className="truncate">
                     {o.label}
                     {o.sub && <span className="ml-1.5 text-xs text-muted-foreground">{o.sub}</span>}
@@ -103,7 +131,8 @@ export function Combobox({ options, value, onChange, onCreate, placeholder = "Vy
                 </button>
               </li>
             ))}
-            {filtered.length === 0 && !canCreate && <li className="px-2 py-2 text-sm text-muted-foreground">Nic nenalezeno</li>}
+            {loading && <li className="px-2 py-2 text-sm text-muted-foreground">Hledám…</li>}
+            {!loading && filtered.length === 0 && !canCreate && <li className="px-2 py-2 text-sm text-muted-foreground">Nic nenalezeno</li>}
             {canCreate && (
               <li>
                 <button

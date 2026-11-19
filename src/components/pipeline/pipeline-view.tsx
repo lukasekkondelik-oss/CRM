@@ -243,6 +243,8 @@ export function PipelineView({ pipelines, pipeline, stages, initialDeals, member
         onCreate={createDeal}
         onCreatePerson={createPerson}
         onCreateOrg={createOrg}
+        onRegisterPerson={(p) => setPersons((ps) => (ps.some((x) => x.id === p.id) ? ps : [...ps, p]))}
+        onRegisterOrg={(o) => setOrgs((os) => (os.some((x) => x.id === o.id) ? os : [...os, o]))}
       />
       <LostDialog open={lostId !== null} onOpenChange={(o) => !o && setLostId(null)} dealTitle={lostDeal?.title} onConfirm={handleLost} />
     </>

@@ -4,12 +4,13 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { ArrowLeft, Building2, CalendarDays, Plus, RotateCcw, Tag, Trash2, Trophy, User, UserCog, Wallet, XCircle } from "lucide-react";
+import { ArrowLeft, Building2, CalendarDays, ExternalLink, Plus, RotateCcw, Tag, Trash2, Trophy, User, UserCog, Wallet, XCircle } from "lucide-react";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Combobox } from "@/components/ui/combobox";
+import { Combobox, type ComboOption } from "@/components/ui/combobox";
+import { searchOrgs, searchPersons } from "@/lib/contacts/search";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Select } from "@/components/ui/select";
 import { LostDialog } from "@/components/pipeline/lost-dialog";
@@ -122,6 +123,15 @@ export function DealDetail({ data, now, today }: { data: Data; now: number; toda
   }
 
   const orgName = new Map(orgs.map((o) => [o.id, o.name]));
+  const registerOrg = (o: OrgLite) => setOrgs((os) => (os.some((x) => x.id === o.id) ? os : [...os, o]));
+  function pickPerson(id: string | null, opt?: ComboOption) {
+    const person = (opt?.data as PersonLite | undefined) ?? persons.find((p) => p.id === id);
+    if (opt?.data) setPersons((ps) => (ps.some((x) => x.id === id) ? ps : [...ps, opt.data as PersonLite]));
+    if (id && person?.organization_id && !deal.organization_id) {
+      if (opt?.sub) registerOrg({ id: person.organization_id, name: opt.sub });
+      patch({ person_id: id, organization_id: person.organization_id });
+    } else patch({ person_id: id });
+  }
   const owner = members.find((m) => m.id === deal.owner_id);
 
   return (
@@ -210,19 +220,23 @@ export function DealDetail({ data, now, today }: { data: Data; now: number; toda
               <input type="date" aria-label="Očekávané datum uzavření" className={ghost} value={deal.expected_close_date ?? ""} onChange={(e) => patch({ expected_close_date: e.target.value || null })} />
             </Row>
             <Row icon={Building2} label="Firma">
-              <Combobox ghost value={deal.organization_id} placeholder="Přidat firmu" createLabel="Nová firma"
-                options={orgs.map((o) => ({ id: o.id, label: o.name }))}
-                onChange={(id) => patch({ organization_id: id })}
+              <div className="flex items-center gap-1">
+              <Combobox className="min-w-0 flex-1" ghost value={deal.organization_id} placeholder="Přidat firmu" createLabel="Nová firma"
+                options={orgs.map((o) => ({ id: o.id, label: o.name }))} search={searchOrgs}
+                onChange={(id, opt) => { if (opt?.data) registerOrg(opt.data as OrgLite); patch({ organization_id: id }); }}
                 onCreate={async (q) => { try { const o = await createOrgQuick(q); setOrgs((os) => [...os, o]); await patch({ organization_id: o.id }); return o.id; } catch { toast.error("Firmu se nepodařilo vytvořit."); } }} />
+              {deal.organization_id && <Link href={`/firmy/${deal.organization_id}`} aria-label="Otevřít firmu" className="rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground"><ExternalLink className="size-3.5" /></Link>}
+              </div>
             </Row>
             <Row icon={User} label="Osoba">
-              <Combobox ghost value={deal.person_id} placeholder="Přidat osobu" createLabel="Nová osoba"
+              <div className="flex items-center gap-1">
+              <Combobox className="min-w-0 flex-1" ghost value={deal.person_id} placeholder="Přidat osobu" createLabel="Nová osoba"
                 options={persons.map((p) => ({ id: p.id, label: personName(p), sub: p.organization_id ? orgName.get(p.organization_id) : undefined }))}
-                onChange={(id) => {
-                  const org = persons.find((p) => p.id === id)?.organization_id;
-                  patch(id && org && !deal.organization_id ? { person_id: id, organization_id: org } : { person_id: id });
-                }}
+                search={searchPersons}
+                onChange={(id, opt) => pickPerson(id, opt)}
                 onCreate={async (q) => { try { const p = await createPersonQuick(q, deal.organization_id); setPersons((ps) => [...ps, p]); await patch({ person_id: p.id }); return p.id; } catch { toast.error("Osobu se nepodařilo vytvořit."); } }} />
+              {deal.person_id && <Link href={`/osoby/${deal.person_id}`} aria-label="Otevřít osobu" className="rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground"><ExternalLink className="size-3.5" /></Link>}
+              </div>
             </Row>
             <Row icon={Tag} label="Labely">
               <div className="flex flex-wrap items-center gap-1.5">

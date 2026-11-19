@@ -33,4 +33,7 @@ Hledej řádky `NOTICE: OK ...`; slovo `MELO SELHAT` se objeví jen při chybě.
 - **Fáze 2** – Pipeline Kanban (drag & drop, zóny Vyhráno/Prohráno, filtry, tabulkový pohled s hromadnými akcemi),
   CRUD dealů, detail dealu (`/dealy/[id]`).
 
-Roadmapa Fází 3–7 je v zadání projektu.
+- **Fáze 3** – Osoby a Firmy (hledání, řazení, stránkování), detaily s navázanými dealy, aktivitami a poznámkami,
+  klikací `tel:`/`mailto:`, serverové hledání ve výběrech osob a firem.
+
+Roadmapa Fází 4–7 je v zadání projektu.

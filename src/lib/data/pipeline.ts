@@ -5,17 +5,25 @@ import type { Deal, Label, Pipeline, Stage } from "@/lib/types";
 
 const LIMIT = 5000;
 
+/** `.in("id", ...)` po dávkách (limit délky URL). */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export async function fetchByIds<T>(supabase: any, table: string, columns: string, ids: (string | null)[]): Promise<T[]> {
+  const unique = [...new Set(ids.filter((x): x is string => !!x))];
+  const chunks: string[][] = [];
+  for (let i = 0; i < unique.length; i += 100) chunks.push(unique.slice(i, i + 100));
+  const results = await Promise.all(chunks.map((c) => supabase.from(table).select(columns).in("id", c)));
+  return results.flatMap((r) => (r.data ?? []) as T[]);
+}
+
 /** Načte vše pro Pipeline obrazovku. Tabulky se čtou odděleně (bez embedů) a spojují v JS. */
 export async function loadPipelineData(requestedPipelineId?: string) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
-  const [pipelinesRes, membersRes, labelsRes, personsRes, orgsRes] = await Promise.all([
+  const [pipelinesRes, membersRes, labelsRes] = await Promise.all([
     supabase.from("pipelines").select("id, workspace_id, name, position").order("position"),
     supabase.from("profiles").select("id, full_name, avatar_url").order("full_name"),
     supabase.from("labels").select("*").order("name"),
-    supabase.from("persons").select("id, first_name, last_name, organization_id").order("last_name").limit(LIMIT),
-    supabase.from("organizations").select("id, name").order("name").limit(LIMIT),
   ]);
 
   const pipelines = (pipelinesRes.data ?? []) as Pipeline[];
@@ -49,6 +57,12 @@ export async function loadPipelineData(requestedPipelineId?: string) {
     nextDue: act.get(d.id)?.next ?? null,
   }));
 
+  // Kontakty načítáme jen ty, na které se dealy odkazují (zbytek řeší serverové hledání).
+  const persons = await fetchByIds<PersonLite>(supabase, "persons", "id, first_name, last_name, organization_id",
+    deals.map((d) => d.person_id));
+  const orgs = await fetchByIds<OrgLite>(supabase, "organizations", "id, name",
+    [...deals.map((d) => d.organization_id), ...persons.map((p) => p.organization_id)]);
+
   return {
     now: Date.now(),
     userId: user.id,
@@ -58,7 +72,7 @@ export async function loadPipelineData(requestedPipelineId?: string) {
     deals,
     members: (membersRes.data ?? []) as Member[],
     labels: (labelsRes.data ?? []) as Label[],
-    persons: (personsRes.data ?? []) as PersonLite[],
-    orgs: (orgsRes.data ?? []) as OrgLite[],
+    persons,
+    orgs,
   };
 }

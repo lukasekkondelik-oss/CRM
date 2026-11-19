@@ -3,7 +3,8 @@
 import { useMemo, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Combobox } from "@/components/ui/combobox";
+import { Combobox, type ComboOption } from "@/components/ui/combobox";
+import { searchOrgs, searchPersons } from "@/lib/contacts/search";
 import { Dialog, DialogContent, DialogFooter, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -23,6 +24,9 @@ interface Props {
   onCreate: (input: Partial<Deal> & Pick<Deal, "stage_id" | "title">) => Promise<boolean>;
   onCreatePerson: (name: string, orgId: string | null) => Promise<PersonLite | null>;
   onCreateOrg: (name: string) => Promise<OrgLite | null>;
+  /** vybraný výsledek serverového hledání → rodič si ho přidá do svých seznamů */
+  onRegisterPerson: (p: PersonLite) => void;
+  onRegisterOrg: (o: OrgLite) => void;
 }
 
 export function NewDealDialog(props: Props) {
@@ -34,7 +38,7 @@ export function NewDealDialog(props: Props) {
   );
 }
 
-function Form({ onOpenChange, stages, defaultStageId, members, persons, orgs, currentUserId, onCreate, onCreatePerson, onCreateOrg }: Props) {
+function Form({ onOpenChange, stages, defaultStageId, members, persons, orgs, currentUserId, onCreate, onCreatePerson, onCreateOrg, onRegisterPerson, onRegisterOrg }: Props) {
   const [title, setTitle] = useState("");
   const [value, setValue] = useState("");
   const [stageId, setStageId] = useState(defaultStageId);
@@ -47,6 +51,16 @@ function Form({ onOpenChange, stages, defaultStageId, members, persons, orgs, cu
   const orgName = useMemo(() => new Map(orgs.map((o) => [o.id, o.name])), [orgs]);
   const personOptions = persons.map((p) => ({ id: p.id, label: personName(p), sub: p.organization_id ? orgName.get(p.organization_id) : undefined }));
   const orgOptions = orgs.map((o) => ({ id: o.id, label: o.name }));
+
+  function pickPerson(id: string | null, opt?: ComboOption) {
+    setPersonId(id);
+    const person = (opt?.data as PersonLite | undefined) ?? persons.find((p) => p.id === id);
+    if (opt?.data) onRegisterPerson(opt.data as PersonLite);
+    if (person?.organization_id && !orgId) {
+      setOrgId(person.organization_id);
+      if (opt?.sub) onRegisterOrg({ id: person.organization_id, name: opt.sub });
+    }
+  }
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -90,7 +104,8 @@ function Form({ onOpenChange, stages, defaultStageId, members, persons, orgs, cu
           <Combobox
             options={orgOptions}
             value={orgId}
-            onChange={setOrgId}
+            search={searchOrgs}
+            onChange={(id, opt) => { setOrgId(id); if (opt?.data) onRegisterOrg(opt.data as OrgLite); }}
             placeholder="Vybrat firmu"
             createLabel="Nová firma"
             onCreate={async (q) => { const o = await onCreateOrg(q); if (o) { setOrgId(o.id); return o.id; } }}
@@ -101,11 +116,8 @@ function Form({ onOpenChange, stages, defaultStageId, members, persons, orgs, cu
           <Combobox
             options={personOptions}
             value={personId}
-            onChange={(id) => {
-              setPersonId(id);
-              const org = persons.find((p) => p.id === id)?.organization_id;
-              if (org && !orgId) setOrgId(org);
-            }}
+            search={searchPersons}
+            onChange={(id, opt) => pickPerson(id, opt)}
             placeholder="Vybrat osobu"
             createLabel="Nová osoba"
             onCreate={async (q) => { const p = await onCreatePerson(q, orgId); if (p) { setPersonId(p.id); return p.id; } }}
