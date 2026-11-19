@@ -6,8 +6,9 @@ Stack: Next.js 16 (App Router) + TypeScript, Supabase (Postgres, Auth, RLS), Tai
 ## Rychlý start
 
 1. **Supabase projekt** – vytvoř na [supabase.com](https://supabase.com).
-2. **Schéma** – v Supabase → SQL Editor spusť obsah `supabase/migrations/20261119000000_init.sql`
-   (nebo `supabase db push` přes Supabase CLI).
+2. **Schéma** – v Supabase → SQL Editor spusť postupně všechny soubory ze `supabase/migrations/` (podle pořadí v názvu):
+   `…000000_init.sql`, `…000100_harden_functions.sql`, `…000200_phase6_invites_search.sql`
+   (nebo `supabase db push` přes Supabase CLI). Každý soubor je jeden skript, který proběhne celý, nebo vůbec.
 3. **Auth** – Authentication → URL Configuration: `Site URL` = `http://localhost:3000`
    a do `Redirect URLs` přidej `http://localhost:3000/auth/callback` (+ produkční URL z Vercelu).
    Pro rychlé testování můžeš v Authentication → Providers → Email vypnout „Confirm email“.
@@ -43,4 +44,5 @@ Hledej řádky `NOTICE: OK ...`; slovo `MELO SELHAT` se objeví jen při chybě.
 
 Testy: `npm test` (jednotkové testy výpočtů).
 
-Roadmapa Fáze 7 je v zadání projektu.
+- **Fáze 7** – polish: skeletony všech sekcí, chybové stránky, tmavý toast, hlavičky zabezpečení, ikona, skip-link,
+  výkon (líné načtení hledání a grafů, memoizované karty při tahu), kontrola mobilu a tmavého režimu.

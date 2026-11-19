@@ -10,8 +10,11 @@ import { Brand } from "@/components/brand";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { NAV_ITEMS } from "./nav-items";
-import { CommandPalette } from "./command-palette";
+import dynamic from "next/dynamic";
 import { ThemeToggle } from "./theme-toggle";
+
+// Hledání se stáhne až při prvním otevření (nezatěžuje první načtení)
+const CommandPalette = dynamic(() => import("./command-palette").then((m) => m.CommandPalette), { ssr: false });
 
 export interface ActivityBadge { today: number; overdue: number }
 
@@ -102,7 +105,9 @@ function SidebarContent({ user, workspaceName, activityBadge, onNavigate, onSear
 
 export function AppShell({ user, workspaceName, activityBadge, children }: Props) {
   const [open, setOpen] = useState(false);
-  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchOpen, setSearchOpenState] = useState(false);
+  const [searchMounted, setSearchMounted] = useState(false);
+  const setSearchOpen = (v: boolean | ((o: boolean) => boolean)) => { setSearchMounted(true); setSearchOpenState(v); };
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -114,6 +119,7 @@ export function AppShell({ user, workspaceName, activityBadge, children }: Props
 
   return (
     <div className="min-h-dvh lg:pl-64">
+      <a href="#obsah" className="sr-only z-[60] rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground focus:not-sr-only focus:fixed focus:left-3 focus:top-3">Přeskočit na obsah</a>
       {/* Desktop sidebar */}
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 border-r bg-sidebar lg:block">
         <SidebarContent user={user} workspaceName={workspaceName} activityBadge={activityBadge} onSearch={() => setSearchOpen(true)} />
@@ -151,9 +157,9 @@ export function AppShell({ user, workspaceName, activityBadge, children }: Props
         </div>
       )}
 
-      <CommandPalette open={searchOpen} onOpenChange={setSearchOpen} />
+      {searchMounted && <CommandPalette open={searchOpen} onOpenChange={setSearchOpen} />}
 
-      <main className="mx-auto w-full max-w-[1600px] px-4 py-6 sm:px-6 lg:px-8">{children}</main>
+      <main id="obsah" tabIndex={-1} className="mx-auto w-full max-w-[1600px] px-4 py-6 sm:px-6 lg:px-8">{children}</main>
     </div>
   );
 }

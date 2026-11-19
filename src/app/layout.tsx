@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import { Toaster } from "sonner";
 import { ThemeProvider } from "@/components/theme-provider";
+import { ThemedToaster } from "@/components/themed-toaster";
 import "./globals.css";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin", "latin-ext"] });
@@ -12,7 +12,11 @@ export const metadata: Metadata = {
   description: "nexdeals – CRM zaměřené na prodejní pipeline, dealy a aktivity.",
 };
 
-export const viewport: Viewport = { width: "device-width", initialScale: 1 };
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: [{ media: "(prefers-color-scheme: light)", color: "#fafafc" }, { media: "(prefers-color-scheme: dark)", color: "#14151a" }],
+};
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -20,7 +24,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="min-h-dvh">
         <ThemeProvider>
           {children}
-          <Toaster position="bottom-right" richColors closeButton />
+          <ThemedToaster />
         </ThemeProvider>
       </body>
     </html>

@@ -11,7 +11,7 @@ import { Select } from "@/components/ui/select";
 import { PageHeader } from "@/components/layout/page-header";
 import { TYPE_ICON } from "@/components/activities/activity-dialog";
 import {
-  PERIODS, computeFunnel, computeKpis, computeMonthly, dealsWithoutNextStep, rottingDeals,
+  PERIODS, computeFunnel, computeKpis, computeMonthly, dealsWithoutNextStep, monthLabel, rottingDeals,
   type DDeal, type DStage, type Period,
 } from "@/lib/dashboard";
 import type { DashActivity } from "@/lib/data/dashboard";
@@ -20,7 +20,12 @@ import { relativeDay } from "@/lib/dates";
 import type { Member } from "@/lib/deals/helpers";
 import type { Pipeline } from "@/lib/types";
 import { cn } from "@/lib/utils";
-import { FunnelChart, WonLostChart, monthLabel } from "./charts";
+import dynamic from "next/dynamic";
+import { Skeleton } from "@/components/ui/skeleton";
+
+// Recharts je největší závislost → stahuje se až na dashboardu a bez SSR
+const FunnelChart = dynamic(() => import("./charts").then((m) => m.FunnelChart), { ssr: false, loading: () => <Skeleton className="h-56 w-full" /> });
+const WonLostChart = dynamic(() => import("./charts").then((m) => m.WonLostChart), { ssr: false, loading: () => <Skeleton className="h-72 w-full" /> });
 
 interface Props {
   deals: DDeal[]; stages: DStage[]; pipelines: Pipeline[]; members: Member[]; activities: DashActivity[];

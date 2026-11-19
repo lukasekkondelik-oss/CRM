@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { memo, useCallback, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   DndContext, DragOverlay, KeyboardSensor, MouseSensor, TouchSensor, pointerWithin, rectIntersection,
@@ -67,7 +67,9 @@ export function Board(props: Props) {
   }, [stages, deals]);
   const cols = dragCols ?? baseCols;
 
-  const infoFor = (d: DealVM): CardInfo => {
+  // Info o kartách se počítá jen při změně dat – během tahu zůstává stabilní a memoizované karty se nerenderují znovu.
+  const infoMap = useMemo(() => {
+    const infoFor = (d: DealVM): CardInfo => {
     const person = d.person_id ? personMap.get(d.person_id) : undefined;
     const orgId = d.organization_id ?? person?.organization_id ?? null;
     return {
@@ -79,7 +81,11 @@ export function Board(props: Props) {
       state: nextState(d, today),
       today,
     };
-  };
+    };
+    return new Map(deals.map((d) => [d.id, infoFor(d)]));
+  }, [deals, personMap, orgMap, memberMap, labelMap, stageMap, now, today]);
+
+  const openDeal = useCallback((id: string) => { if (!justDragged.current) router.push(`/dealy/${id}`); }, [router]);
 
   const findContainer = (id: string, c: Record<string, string[]>) =>
     id in c ? id : Object.keys(c).find((k) => c[k].includes(id));
@@ -181,12 +187,7 @@ export function Board(props: Props) {
               {ids.map((id) => {
                 const d = dealMap.get(id);
                 return d ? (
-                  <SortableCard
-                    key={id}
-                    deal={d}
-                    info={infoFor(d)}
-                    onOpen={() => !justDragged.current && router.push(`/dealy/${d.id}`)}
-                  />
+                  <SortableCard key={id} deal={d} info={infoMap.get(d.id)!} onOpen={openDeal} />
                 ) : null;
               })}
               {ids.length === 0 && quickStage !== stage.id && (
@@ -203,7 +204,7 @@ export function Board(props: Props) {
         })}
       </div>
 
-      <DragOverlay>{activeDeal && <DealCard deal={activeDeal} info={infoFor(activeDeal)} className="rotate-2 shadow-pop" />}</DragOverlay>
+      <DragOverlay>{activeDeal && <DealCard deal={activeDeal} info={infoMap.get(activeDeal.id)!} className="rotate-2 shadow-pop" />}</DragOverlay>
 
       {activeId && (
         <div className="fixed inset-x-0 bottom-0 z-40 flex gap-3 border-t bg-background/90 p-3 backdrop-blur lg:left-64">
@@ -247,7 +248,7 @@ function Column({ stage, ids, count, sum, onAdd, children }: {
   );
 }
 
-function SortableCard({ deal, info, onOpen }: { deal: DealVM; info: CardInfo; onOpen: () => void }) {
+const SortableCard = memo(function SortableCard({ deal, info, onOpen }: { deal: DealVM; info: CardInfo; onOpen: (id: string) => void }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: deal.id });
   return (
     <DealCard
@@ -256,12 +257,12 @@ function SortableCard({ deal, info, onOpen }: { deal: DealVM; info: CardInfo; on
       info={info}
       style={{ transform: CSS.Transform.toString(transform), transition }}
       className={cn(isDragging && "opacity-40")}
-      onClick={onOpen}
+      onClick={() => onOpen(deal.id)}
       {...attributes}
       {...listeners}
     />
   );
-}
+});
 
 function Zone({ id, icon: Icon, label, tone }: { id: string; icon: typeof Trophy; label: string; tone: "success" | "danger" }) {
   const { setNodeRef, isOver } = useDroppable({ id });

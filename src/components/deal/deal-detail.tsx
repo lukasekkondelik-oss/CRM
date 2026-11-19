@@ -141,17 +141,18 @@ export function DealDetail({ data, now, today }: { data: Data; now: number; toda
       </Link>
 
       <div className="mb-6 flex flex-wrap items-start justify-between gap-3">
-        <div className="min-w-0 flex-1">
-          <input
+        <div className="min-w-0 basis-full sm:flex-1 sm:basis-64">
+          <textarea
             aria-label="Název dealu"
+            rows={1}
             defaultValue={deal.title}
             onBlur={(e) => {
               const v = e.target.value.trim();
               if (!v) return void (e.target.value = deal.title);
               if (v !== deal.title) patch({ title: v });
             }}
-            onKeyDown={(e) => e.key === "Enter" && (e.target as HTMLInputElement).blur()}
-            className="w-full rounded-md border border-transparent bg-transparent text-2xl font-semibold tracking-tight hover:bg-muted focus-visible:border-ring focus-visible:bg-card focus-visible:outline-none"
+            onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); (e.target as HTMLTextAreaElement).blur(); } }}
+            className="block w-full resize-none rounded-md border border-transparent bg-transparent text-2xl font-semibold leading-tight tracking-tight [field-sizing:content] hover:bg-muted focus-visible:border-ring focus-visible:bg-card focus-visible:outline-none"
           />
           <div className="mt-1 flex flex-wrap items-center gap-2 pl-px">
             {deal.status === "won" && <Badge variant="success">Vyhráno {formatDate(deal.won_at)}</Badge>}

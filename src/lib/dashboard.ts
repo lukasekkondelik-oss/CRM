@@ -92,6 +92,10 @@ export function computeFunnel(deals: DDeal[], stages: DStage[], pipelineId: stri
   return rows;
 }
 
+const monthFmt = new Intl.DateTimeFormat("cs-CZ", { month: "short", year: "2-digit", timeZone: "UTC" });
+/** „2026-11“ → „lis 26“ */
+export const monthLabel = (key: string) => monthFmt.format(new Date(`${key}-01T12:00:00Z`));
+
 export interface MonthRow { key: string; won: number; lost: number; wonValue: number; lostValue: number }
 
 /** Vyhrané vs prohrané po měsících; vždy aspoň 6 měsíců končících aktuálním. */

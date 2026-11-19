@@ -2,13 +2,11 @@
 
 import { Bar, BarChart, CartesianGrid, LabelList, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { formatCZK } from "@/lib/format";
-import type { FunnelRow, MonthRow } from "@/lib/dashboard";
+import { monthLabel, type FunnelRow, type MonthRow } from "@/lib/dashboard";
 
 const AXIS = { fill: "var(--muted-foreground)", fontSize: 12 };
 const GRID = "var(--border)";
 
-const monthFmt = new Intl.DateTimeFormat("cs-CZ", { month: "short", year: "2-digit", timeZone: "UTC" });
-export const monthLabel = (key: string) => monthFmt.format(new Date(`${key}-01T12:00:00Z`));
 
 function Tip({ title, rows }: { title: string; rows: { color?: string; label: string; value: string }[] }) {
   return (
