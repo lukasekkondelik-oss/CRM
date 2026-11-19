@@ -1,0 +1,109 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ---- Design tokeny (světlý režim) ---- */
+:root {
+  --background: oklch(0.985 0.003 265);
+  --foreground: oklch(0.21 0.02 265);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.21 0.02 265);
+  --muted: oklch(0.96 0.005 265);
+  --muted-foreground: oklch(0.52 0.02 265);
+  --border: oklch(0.92 0.006 265);
+  --input: oklch(0.9 0.008 265);
+  --ring: oklch(0.55 0.21 272);
+
+  /* jediná výrazná akcentní barva */
+  --primary: oklch(0.52 0.22 272);
+  --primary-foreground: oklch(0.99 0 0);
+  --accent: oklch(0.95 0.025 272);
+  --accent-foreground: oklch(0.38 0.17 272);
+
+  /* stavy */
+  --success: oklch(0.62 0.16 150);
+  --success-soft: oklch(0.95 0.05 150);
+  --warning: oklch(0.78 0.16 80);
+  --warning-soft: oklch(0.96 0.07 90);
+  --danger: oklch(0.6 0.22 25);
+  --danger-soft: oklch(0.95 0.04 25);
+
+  --sidebar: oklch(1 0 0);
+  --radius: 0.75rem;
+}
+
+/* ---- Dark mode ---- */
+.dark {
+  --background: oklch(0.16 0.012 265);
+  --foreground: oklch(0.96 0.005 265);
+  --card: oklch(0.205 0.014 265);
+  --card-foreground: oklch(0.96 0.005 265);
+  --muted: oklch(0.25 0.014 265);
+  --muted-foreground: oklch(0.7 0.015 265);
+  --border: oklch(0.3 0.015 265);
+  --input: oklch(0.33 0.016 265);
+  --ring: oklch(0.68 0.19 272);
+
+  --primary: oklch(0.65 0.2 272);
+  --primary-foreground: oklch(0.14 0.02 265);
+  --accent: oklch(0.28 0.06 272);
+  --accent-foreground: oklch(0.88 0.08 272);
+
+  --success: oklch(0.72 0.16 150);
+  --success-soft: oklch(0.28 0.06 150);
+  --warning: oklch(0.82 0.15 85);
+  --warning-soft: oklch(0.3 0.06 85);
+  --danger: oklch(0.7 0.19 25);
+  --danger-soft: oklch(0.29 0.07 25);
+
+  --sidebar: oklch(0.19 0.013 265);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-sidebar: var(--sidebar);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  --shadow-card: 0 1px 2px oklch(0.2 0.02 265 / 0.05), 0 1px 3px oklch(0.2 0.02 265 / 0.04);
+  --shadow-pop: 0 8px 24px oklch(0.2 0.02 265 / 0.12);
+
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-ring;
+  }
+}
