@@ -36,3 +36,18 @@ export async function searchDeals(q: string): Promise<ComboOption[]> {
   const { data } = await query.eq("status", "open").order("created_at", { ascending: false }).limit(20);
   return ((data ?? []) as { id: string; title: string }[]).map((d) => ({ id: d.id, label: d.title, data: d }));
 }
+
+export interface GlobalResults { deals: ComboOption[]; persons: ComboOption[]; orgs: ComboOption[] }
+
+/** Globální hledání: dealy (i uzavřené), osoby a firmy, po 6 výsledcích. */
+export async function searchAll(q: string): Promise<GlobalResults> {
+  let dq = createClient().from("deals").select("id, title, status, value");
+  for (const f of wordFilters(q, ["title"])) dq = dq.or(f);
+  const [deals, persons, orgs] = await Promise.all([dq.order("created_at", { ascending: false }).limit(6), searchPersons(q), searchOrgs(q)]);
+  const status = { open: "", won: "Vyhráno", lost: "Prohráno" } as Record<string, string>;
+  return {
+    deals: ((deals.data ?? []) as { id: string; title: string; status: string }[]).map((d) => ({ id: d.id, label: d.title, sub: status[d.status] || undefined })),
+    persons: persons.slice(0, 6),
+    orgs: orgs.slice(0, 6),
+  };
+}

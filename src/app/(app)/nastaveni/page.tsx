@@ -1,15 +1,15 @@
 import type { Metadata } from "next";
 import { Settings } from "lucide-react";
-import { PageHeader } from "@/components/layout/page-header";
+import { SettingsView } from "@/components/settings/settings-view";
 import { EmptyState } from "@/components/ui/empty-state";
+import { loadSettings } from "@/lib/data/settings";
 
 export const metadata: Metadata = { title: "Nastavení" };
+const TABS = ["team", "pipelines", "labels", "import"] as const;
 
-export default function Page() {
-  return (
-    <>
-      <PageHeader title="Nastavení" description="Workspace, pipelines, labely a tým." />
-      <EmptyState icon={Settings} title="Tahle sekce je na cestě" description="Správa pipelines, labelů a pozvánek přijde ve Fázi 6." />
-    </>
-  );
+export default async function SettingsPage({ searchParams }: { searchParams: Promise<{ tab?: string }> }) {
+  const { tab } = await searchParams;
+  const data = await loadSettings();
+  if (!data) return <EmptyState icon={Settings} title="Nastavení se nepodařilo načíst" description="Zkus stránku obnovit." />;
+  return <SettingsView data={data} initialTab={TABS.find((t) => t === tab) ?? "team"} />;
 }

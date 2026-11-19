@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Building2 } from "lucide-react";
+import { Building2, Download } from "lucide-react";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { buttonVariants } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PageHeader } from "@/components/layout/page-header";
@@ -24,10 +25,11 @@ export default async function OrgsPage({ searchParams }: { searchParams: Promise
   if (rows.length === 0 && p.page > 1) redirect(listHref(BASE, p, { page: 1 }));
   const memberMap = new Map(members.map((m) => [m.id, m]));
   const newBtn = <NewOrgButton members={members} currentUserId={userId} />;
+  const exportLink = <a href={`/export/firmy${p.q ? `?q=${encodeURIComponent(p.q)}` : ""}`} download className={buttonVariants({ variant: "outline" })}><Download /> Export CSV</a>;
 
   return (
     <>
-      <PageHeader title="Firmy" description="Organizace, jejich kontakty a dealy." actions={newBtn} />
+      <PageHeader title="Firmy" description="Organizace, jejich kontakty a dealy." actions={<>{total > 0 && exportLink}{newBtn}</>} />
       {total === 0 && !p.q ? (
         <EmptyState icon={Building2} title="Zatím tu nejsou žádné firmy" description="Přidej první firmu a navaž na ni osoby a dealy. Import z CSV přijde ve Fázi 6." action={newBtn} />
       ) : (

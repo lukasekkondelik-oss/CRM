@@ -38,7 +38,9 @@ Hledej řádky `NOTICE: OK ...`; slovo `MELO SELHAT` se objeví jen při chybě.
 - **Fáze 4** – Aktivity (Dnes / Po termínu / Tento týden / Vše, kalendář týden/měsíc), modal „Naplánovat další
   aktivitu?“, odznak v navigaci, další krok na kartě dealu.
 - **Fáze 5** – Dashboard (KPI, funnel, výhry/prohry po měsících, seznamy, filtr období a vlastníka).
+- **Fáze 6** – Nastavení (pipelines a fáze s drag & drop, labely, tým a pozvánky), globální hledání Ctrl/Cmd+K,
+  import CSV s mapováním a náhledem, export CSV. Vyžaduje migraci `20261119000200_phase6_invites_search.sql`.
 
 Testy: `npm test` (jednotkové testy výpočtů).
 
-Roadmapa Fází 6–7 je v zadání projektu.
+Roadmapa Fáze 7 je v zadání projektu.

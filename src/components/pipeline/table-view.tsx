@@ -12,7 +12,8 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { formatCZK, formatDate } from "@/lib/format";
 import { isRotting, nextState, personName, type DealVM, type Member, type OrgLite, type PersonLite } from "@/lib/deals/helpers";
 import type { Stage } from "@/lib/types";
-import { Kanban } from "lucide-react";
+import { Download, Kanban } from "lucide-react";
+import { toCsv } from "@/lib/csv";
 import { cn } from "@/lib/utils";
 import { NextStepIcon } from "./next-step-icon";
 
@@ -84,8 +85,25 @@ export function TableView({ deals, stages, members, persons, orgs, now, today, o
     return <EmptyState icon={Kanban} title="Žádné dealy neodpovídají filtrům" description="Zkus upravit filtry nebo přidej nový deal tlačítkem nahoře." />;
   }
 
+  function exportCsv() {
+    const stat = { open: "Otevřený", won: "Vyhráno", lost: "Prohráno" };
+    const lines = rows.map((d) => {
+      const person = d.person_id ? personMap.get(d.person_id) : undefined;
+      const orgId = d.organization_id ?? person?.organization_id;
+      return [d.title, d.value, stat[d.status], stageMap.get(d.stage_id)?.name, orgId ? orgMap.get(orgId)?.name : "", person ? personName(person) : "",
+        d.owner_id ? memberMap.get(d.owner_id)?.full_name : "", d.expected_close_date, d.lost_reason];
+    });
+    const blob = new Blob([toCsv([["Název", "Hodnota", "Stav", "Fáze", "Firma", "Osoba", "Vlastník", "Očekávané uzavření", "Důvod prohry"], ...lines])], { type: "text/csv;charset=utf-8" });
+    const a = Object.assign(document.createElement("a"), { href: URL.createObjectURL(blob), download: "nexdeals-dealy-tabulka.csv" });
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }
+
   return (
     <div>
+      <div className="mb-3 flex justify-end">
+        <Button variant="outline" size="sm" onClick={exportCsv}><Download /> Export CSV ({rows.length})</Button>
+      </div>
       {sel.length > 0 && (
         <div className="mb-3 flex flex-wrap items-center gap-2 rounded-xl border bg-accent/50 p-2.5">
           <span className="px-2 text-sm font-medium">Vybráno: {sel.length}</span>

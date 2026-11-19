@@ -43,6 +43,7 @@ export async function register(_prev: AuthState, formData: FormData): Promise<Au
   const fullName = str(formData, "full_name");
   const workspaceName = str(formData, "workspace_name");
   const email = str(formData, "email");
+  const inviteToken = str(formData, "invite_token");
   const password = String(formData.get("password") ?? "");
 
   if (!fullName || !email) return { error: "Vyplň jméno a e-mail." };
@@ -53,15 +54,26 @@ export async function register(_prev: AuthState, formData: FormData): Promise<Au
   const proto = h.get("x-forwarded-proto") ?? (host?.startsWith("localhost") ? "http" : "https");
 
   const supabase = await createClient();
+
+  // Pozvánka: znovu ověřit na serveru a hlídat, že se e-mail shoduje (trigger v DB to ověří také)
+  if (inviteToken) {
+    const { data: inv } = await supabase.rpc("get_invitation", { p_token: inviteToken });
+    const invitation = Array.isArray(inv) ? inv[0] : null;
+    if (!invitation) return { error: "Pozvánka je neplatná nebo vypršela. Požádej admina o novou." };
+    if (String(invitation.email).toLowerCase() !== email.toLowerCase()) return { error: `Pozvánka je pro e-mail ${invitation.email}.` };
+  }
+
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: {
-      data: { full_name: fullName, workspace_name: workspaceName || `${fullName} – firma` },
+      data: inviteToken
+        ? { full_name: fullName, invite_token: inviteToken }
+        : { full_name: fullName, workspace_name: workspaceName || `${fullName} – firma` },
       emailRedirectTo: `${proto}://${host}/auth/callback`,
     },
   });
-  if (error) return { error: translate(error) };
+  if (error) return { error: inviteToken && /database error/i.test(error.message) ? "Pozvánku se nepodařilo použít (vypršela nebo je pro jiný e-mail)." : translate(error) };
 
   // Supabase u již existujícího e-mailu vrací uživatele bez identit (kvůli ochraně soukromí).
   if (data.user && data.user.identities?.length === 0) {

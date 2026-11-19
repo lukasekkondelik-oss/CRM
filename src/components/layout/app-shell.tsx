@@ -2,14 +2,15 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
-import { LogOut, Menu, X } from "lucide-react";
+import { useEffect, useState } from "react";
+import { LogOut, Menu, Search, X } from "lucide-react";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Brand } from "@/components/brand";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { NAV_ITEMS } from "./nav-items";
+import { CommandPalette } from "./command-palette";
 import { ThemeToggle } from "./theme-toggle";
 
 export interface ActivityBadge { today: number; overdue: number }
@@ -21,7 +22,7 @@ interface Props {
   children: React.ReactNode;
 }
 
-function SidebarContent({ user, workspaceName, activityBadge, onNavigate }: Omit<Props, "children"> & { onNavigate?: () => void }) {
+function SidebarContent({ user, workspaceName, activityBadge, onNavigate, onSearch }: Omit<Props, "children"> & { onNavigate?: () => void; onSearch: () => void }) {
   const pathname = usePathname();
   return (
     <div className="flex h-full flex-col">
@@ -30,6 +31,14 @@ function SidebarContent({ user, workspaceName, activityBadge, onNavigate }: Omit
         <p className="mt-3 truncate rounded-lg bg-muted px-3 py-1.5 text-xs font-medium text-muted-foreground">
           {workspaceName}
         </p>
+      </div>
+
+      <div className="px-3 pb-3">
+        <button type="button" onClick={() => { onNavigate?.(); onSearch(); }} aria-label="Hledat (Ctrl+K)"
+          className="flex h-9 w-full items-center gap-2 rounded-lg border bg-card px-3 text-sm text-muted-foreground shadow-card hover:bg-muted">
+          <Search className="size-4" /> <span className="flex-1 text-left">Hledat…</span>
+          <kbd className="rounded border bg-muted px-1.5 text-[10px] font-medium">Ctrl K</kbd>
+        </button>
       </div>
 
       <nav className="flex flex-1 flex-col gap-0.5 px-3" aria-label="Hlavní navigace">
@@ -93,12 +102,21 @@ function SidebarContent({ user, workspaceName, activityBadge, onNavigate }: Omit
 
 export function AppShell({ user, workspaceName, activityBadge, children }: Props) {
   const [open, setOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") { e.preventDefault(); setSearchOpen((o) => !o); }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
 
   return (
     <div className="min-h-dvh lg:pl-64">
       {/* Desktop sidebar */}
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 border-r bg-sidebar lg:block">
-        <SidebarContent user={user} workspaceName={workspaceName} activityBadge={activityBadge} />
+        <SidebarContent user={user} workspaceName={workspaceName} activityBadge={activityBadge} onSearch={() => setSearchOpen(true)} />
       </aside>
 
       {/* Mobilní horní lišta */}
@@ -106,7 +124,8 @@ export function AppShell({ user, workspaceName, activityBadge, children }: Props
         <Button variant="ghost" size="icon" aria-label="Otevřít menu" onClick={() => setOpen(true)}>
           <Menu />
         </Button>
-        <Brand />
+        <Brand className="flex-1" />
+        <Button variant="ghost" size="icon" aria-label="Hledat" onClick={() => setSearchOpen(true)}><Search /></Button>
       </header>
 
       {/* Mobilní drawer */}
@@ -127,10 +146,12 @@ export function AppShell({ user, workspaceName, activityBadge, children }: Props
             >
               <X />
             </Button>
-            <SidebarContent user={user} workspaceName={workspaceName} activityBadge={activityBadge} onNavigate={() => setOpen(false)} />
+            <SidebarContent user={user} workspaceName={workspaceName} activityBadge={activityBadge} onNavigate={() => setOpen(false)} onSearch={() => setSearchOpen(true)} />
           </aside>
         </div>
       )}
+
+      <CommandPalette open={searchOpen} onOpenChange={setSearchOpen} />
 
       <main className="mx-auto w-full max-w-[1600px] px-4 py-6 sm:px-6 lg:px-8">{children}</main>
     </div>

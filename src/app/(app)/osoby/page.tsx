@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Users } from "lucide-react";
+import { Download, Users } from "lucide-react";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { buttonVariants } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PageHeader } from "@/components/layout/page-header";
@@ -24,10 +25,11 @@ export default async function PersonsPage({ searchParams }: { searchParams: Prom
   if (rows.length === 0 && p.page > 1) redirect(listHref(BASE, p, { page: 1 }));
   const memberMap = new Map(members.map((m) => [m.id, m]));
   const newBtn = <NewPersonButton members={members} currentUserId={userId} />;
+  const exportLink = <a href={`/export/osoby${p.q ? `?q=${encodeURIComponent(p.q)}` : ""}`} download className={buttonVariants({ variant: "outline" })}><Download /> Export CSV</a>;
 
   return (
     <>
-      <PageHeader title="Osoby" description="Kontaktní osoby napříč firmami a jejich dealy." actions={newBtn} />
+      <PageHeader title="Osoby" description="Kontaktní osoby napříč firmami a jejich dealy." actions={<>{total > 0 && exportLink}{newBtn}</>} />
       {total === 0 && !p.q ? (
         <EmptyState icon={Users} title="Zatím tu nejsou žádné osoby" description="Přidej první kontakt a propoj ho s dealem. Import z CSV přijde ve Fázi 6." action={newBtn} />
       ) : (

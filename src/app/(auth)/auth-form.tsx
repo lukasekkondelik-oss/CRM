@@ -15,21 +15,26 @@ export interface Field {
   placeholder?: string;
   required?: boolean;
   minLength?: number;
+  defaultValue?: string;
+  readOnly?: boolean;
 }
 
 export function AuthForm({
   action,
   fields,
   submitLabel,
+  hidden,
 }: {
   action: (prev: AuthState, fd: FormData) => Promise<AuthState>;
   fields: Field[];
   submitLabel: string;
+  hidden?: Record<string, string>;
 }) {
   const [state, formAction, pending] = useActionState(action, undefined);
 
   return (
     <form action={formAction} className="flex flex-col gap-4">
+      {Object.entries(hidden ?? {}).map(([k, v]) => <input key={k} type="hidden" name={k} value={v} />)}
       {fields.map((f) => (
         <div key={f.name} className="flex flex-col gap-1.5">
           <Label htmlFor={f.name}>{f.label}</Label>
@@ -41,6 +46,8 @@ export function AuthForm({
             placeholder={f.placeholder}
             required={f.required ?? true}
             minLength={f.minLength}
+            defaultValue={f.defaultValue}
+            readOnly={f.readOnly}
           />
         </div>
       ))}
