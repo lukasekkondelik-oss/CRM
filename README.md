@@ -29,4 +29,8 @@ Hledej řádky `NOTICE: OK ...`; slovo `MELO SELHAT` se objeví jen při chybě.
 
 ## Stav
 
-Hotová je Fáze 1 (schéma, RLS, auth, onboarding, layout). Roadmapa Fází 2–7 je v zadání projektu.
+- **Fáze 1** – schéma, RLS, auth, onboarding, layout.
+- **Fáze 2** – Pipeline Kanban (drag & drop, zóny Vyhráno/Prohráno, filtry, tabulkový pohled s hromadnými akcemi),
+  CRUD dealů, detail dealu (`/dealy/[id]`).
+
+Roadmapa Fází 3–7 je v zadání projektu.
