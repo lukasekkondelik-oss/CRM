@@ -25,7 +25,7 @@ export function CommandPalette({ open, onOpenChange }: { open: boolean; onOpenCh
       <DialogPrimitive.Portal>
         <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/50" />
         <DialogPrimitive.Content aria-describedby={undefined}
-          className="fixed left-1/2 top-[12vh] z-50 w-[calc(100%-1.5rem)] max-w-xl -translate-x-1/2 overflow-hidden rounded-xl border bg-card shadow-pop focus:outline-none">
+          className="fixed left-1/2 top-[12vh] z-50 w-[calc(100%-1.5rem)] max-w-xl -translate-x-1/2 overflow-hidden rounded-2xl border bg-surface-3 shadow-pop focus:outline-none">
           <DialogPrimitive.Title className="sr-only">Hledání</DialogPrimitive.Title>
           {open && <Palette onDone={() => onOpenChange(false)} />}
         </DialogPrimitive.Content>
@@ -85,7 +85,7 @@ function Palette({ onDone }: { onDone: () => void }) {
           role="combobox" aria-expanded aria-controls="cmd-list" aria-activedescendant={items[idx] ? `cmd-${items[idx].id}` : undefined}
           className="h-12 flex-1 bg-transparent text-sm focus-visible:outline-none" />
         {loading && <Loader2 className="size-4 animate-spin text-muted-foreground" />}
-        <kbd className="hidden rounded border bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground sm:block">Esc</kbd>
+        <kbd className="hidden rounded border bg-surface-3 px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground sm:block">Esc</kbd>
       </div>
       <ul id="cmd-list" ref={listRef} role="listbox" className="max-h-[50vh] overflow-y-auto p-2">
         {items.length === 0 && <li className="px-3 py-8 text-center text-sm text-muted-foreground">{q.trim().length < 2 ? "Napiš aspoň 2 znaky…" : loading ? "Hledám…" : `Nic nenalezeno pro „${q.trim()}“`}</li>}

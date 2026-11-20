@@ -37,7 +37,7 @@ export default async function PersonsPage({ searchParams }: { searchParams: Prom
         <>
           <div className="mb-4 flex flex-col gap-2 sm:flex-row"><SearchBox placeholder="Hledat jméno, e-mail, telefon…" /><LabelFilter labels={labels} /></div>
           {total === 0 ? (
-            <EmptyState icon={Users} title={p.q ? `Nic nenalezeno pro „${p.q}“` : "Žádný záznam s tímto štítkem"} description="Zkus jiné slovo nebo štítek, případně filtry zruš." action={<Link href={BASE} className="text-sm font-medium text-primary hover:underline">Zrušit filtry</Link>} />
+            <EmptyState icon={Users} title={p.q ? `Nic nenalezeno pro „${p.q}“` : "Žádný záznam s tímto štítkem"} description="Zkus jiné slovo nebo štítek, případně filtry zruš." action={<Link href={BASE} className="text-sm font-medium text-accent-foreground hover:underline">Zrušit filtry</Link>} />
           ) : (
             <Card className="overflow-x-auto">
               <table className="w-full min-w-[960px] text-sm">
@@ -59,12 +59,12 @@ export default async function PersonsPage({ searchParams }: { searchParams: Prom
                     const owner = r.owner_id ? memberMap.get(r.owner_id) : undefined;
                     return (
                       <tr key={r.id} className="hover:bg-muted/40">
-                        <td className="px-3 py-2.5"><Link href={`/osoby/${r.id}`} className="font-medium hover:text-primary hover:underline">{personName(r)}</Link><LabelChips labels={labels} ids={r.labelIds} /></td>
-                        <td className="px-3 py-2.5">{r.organization_id ? <Link href={`/firmy/${r.organization_id}`} className="text-muted-foreground hover:text-primary hover:underline">{r.orgName}</Link> : "—"}</td>
-                        <td className="px-3 py-2.5">{r.email ? <a href={`mailto:${r.email}`} className="text-primary hover:underline">{r.email}</a> : "—"}</td>
-                        <td className="whitespace-nowrap px-3 py-2.5">{r.phone ? <a href={telHref(r.phone)} className="text-primary hover:underline">{r.phone}</a> : "—"}</td>
+                        <td className="px-3 py-2.5"><Link href={`/osoby/${r.id}`} className="font-medium hover:text-accent-foreground hover:underline">{personName(r)}</Link><LabelChips labels={labels} ids={r.labelIds} /></td>
+                        <td className="px-3 py-2.5">{r.organization_id ? <Link href={`/firmy/${r.organization_id}`} className="text-muted-foreground hover:text-accent-foreground hover:underline">{r.orgName}</Link> : "—"}</td>
+                        <td className="px-3 py-2.5">{r.email ? <a href={`mailto:${r.email}`} className="text-accent-foreground hover:underline">{r.email}</a> : "—"}</td>
+                        <td className="whitespace-nowrap px-3 py-2.5">{r.phone ? <a href={telHref(r.phone)} className="text-accent-foreground hover:underline">{r.phone}</a> : "—"}</td>
                         <td className="px-3 py-2.5 text-muted-foreground">{r.position ?? "—"}</td>
-                        <td className="px-3 py-2.5">{r.web ? <a href={webHref(r.web)} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">{r.web}</a> : "—"}</td>
+                        <td className="px-3 py-2.5">{r.web ? <a href={webHref(r.web)} target="_blank" rel="noopener noreferrer" className="text-accent-foreground hover:underline">{r.web}</a> : "—"}</td>
                         <td className="px-3 py-2.5">{owner ? <span className="flex items-center gap-2"><Avatar name={owner.full_name} src={owner.avatar_url} className="size-6 text-[10px]" /><span className="hidden xl:inline">{owner.full_name}</span></span> : "—"}</td>
                         <td className="px-3 py-2.5">{r.openDeals > 0 ? <Badge>{r.openDeals}</Badge> : <span className="text-muted-foreground">0</span>}</td>
                         <td className="whitespace-nowrap px-3 py-2.5 text-muted-foreground">{formatDate(r.created_at)}</td>

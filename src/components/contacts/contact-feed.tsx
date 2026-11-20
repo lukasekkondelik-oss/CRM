@@ -57,7 +57,7 @@ export function ContactFeed({ activities, notes: initialNotes, deals, members, t
   }, [activities, notes]);
 
   const dealLink = (id: string | null) =>
-    id && dealTitle.has(id) ? <> · <Link href={`/dealy/${id}`} className="text-primary hover:underline">{dealTitle.get(id)}</Link></> : null;
+    id && dealTitle.has(id) ? <> · <Link href={`/dealy/${id}`} className="text-accent-foreground hover:underline">{dealTitle.get(id)}</Link></> : null;
 
   return (
     <div className="flex min-w-0 flex-col gap-4">

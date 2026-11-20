@@ -1,10 +1,11 @@
 "use client";
 
-import { Bar, BarChart, CartesianGrid, LabelList, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { Bar, BarChart, Cell, CartesianGrid, LabelList, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { formatCZK } from "@/lib/format";
+import { stageColor } from "@/lib/deals/stage-colors";
 import { monthLabel, type FunnelRow, type MonthRow } from "@/lib/dashboard";
 
-const AXIS = { fill: "var(--muted-foreground)", fontSize: 12 };
+const AXIS = { fill: "var(--subtle)", fontSize: 12 };
 const GRID = "var(--border)";
 
 
@@ -44,6 +45,7 @@ export function FunnelChart({ rows }: { rows: FunnelRow[] }) {
             }}
           />
           <Bar dataKey="count" fill="var(--series-1)" barSize={22} radius={[0, 4, 4, 0]} isAnimationActive={false}>
+            {rows.map((r, i) => <Cell key={r.name + i} fill={stageColor(i, rows.length)} />)}
             <LabelList dataKey="count" position="right" style={{ fill: "var(--foreground)", fontSize: 12, fontWeight: 600 }} />
           </Bar>
         </BarChart>
@@ -66,13 +68,13 @@ export function WonLostChart({ rows }: { rows: MonthRow[] }) {
             content={({ active, payload }) => {
               const r = active ? (payload?.[0]?.payload as MonthRow | undefined) : undefined;
               return r ? <Tip title={monthLabel(r.key)} rows={[
-                { color: "var(--series-1)", label: "Vyhráno", value: `${r.won} (${formatCZK(r.wonValue)})` },
-                { color: "var(--series-2)", label: "Prohráno", value: `${r.lost} (${formatCZK(r.lostValue)})` },
+                { color: "var(--success)", label: "Vyhráno", value: `${r.won} (${formatCZK(r.wonValue)})` },
+                { color: "var(--danger)", label: "Prohráno", value: `${r.lost} (${formatCZK(r.lostValue)})` },
               ]} /> : null;
             }}
           />
-          <Bar dataKey="won" name="Vyhráno" fill="var(--series-1)" barSize={16} radius={[4, 4, 0, 0]} isAnimationActive={false} />
-          <Bar dataKey="lost" name="Prohráno" fill="var(--series-2)" barSize={16} radius={[4, 4, 0, 0]} isAnimationActive={false} />
+          <Bar dataKey="won" name="Vyhráno" fill="var(--success)" barSize={16} radius={[4, 4, 0, 0]} isAnimationActive={false} />
+          <Bar dataKey="lost" name="Prohráno" fill="var(--danger)" barSize={16} radius={[4, 4, 0, 0]} isAnimationActive={false} />
         </BarChart>
       </ResponsiveContainer>
     </div>

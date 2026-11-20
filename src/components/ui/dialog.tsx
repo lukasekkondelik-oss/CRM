@@ -22,7 +22,7 @@ export function DialogContent({
           if ((e.target as Element | null)?.closest?.('[data-combobox-open="true"]')) e.preventDefault();
         }}
         className={cn(
-          "fixed left-1/2 top-1/2 z-50 max-h-[90dvh] w-[calc(100%-2rem)] max-w-lg -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-xl border bg-card p-6 shadow-pop focus:outline-none",
+          "fixed left-1/2 top-1/2 z-50 max-h-[90dvh] w-[calc(100%-2rem)] max-w-lg -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-2xl border bg-surface-3 p-6 shadow-pop focus:outline-none",
           className,
         )}
         {...props}
@@ -40,7 +40,7 @@ export function DialogContent({
 }
 
 export function DialogTitle({ className, ...props }: React.ComponentProps<typeof DialogPrimitive.Title>) {
-  return <DialogPrimitive.Title className={cn("text-lg font-semibold", className)} {...props} />;
+  return <DialogPrimitive.Title className={cn("font-display text-xl font-semibold tracking-[-0.02em]", className)} {...props} />;
 }
 
 export function DialogDescription({

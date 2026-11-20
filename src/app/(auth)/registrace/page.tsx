@@ -54,7 +54,7 @@ export default async function RegisterPage({ searchParams }: { searchParams: Pro
           <AuthForm action={register} submitLabel={invitation ? "Připojit se" : "Vytvořit účet"} fields={fields} hidden={{ ...(invitation ? { invite_token: invite! } : {}), ...(next ? { next } : {}) }} />
         )}
         <p className="text-center text-sm text-muted-foreground">
-          Už máš účet? <Link href={next ? `/login?next=${encodeURIComponent(next)}` : "/login"} className="font-medium text-primary hover:underline">Přihlas se</Link>
+          Už máš účet? <Link href={next ? `/login?next=${encodeURIComponent(next)}` : "/login"} className="font-medium text-accent-foreground hover:underline">Přihlas se</Link>
         </p>
       </CardContent>
     </Card>

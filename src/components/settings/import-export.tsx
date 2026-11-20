@@ -115,7 +115,7 @@ function ImportWizard({ members, userId, pipelines, stages }: Props) {
               <input ref={input} type="file" accept=".csv,.tsv,.txt,text/csv" className="sr-only" id="csv-file" onChange={(e) => onFile(e.target.files?.[0])} />
               <label htmlFor="csv-file" className="inline-flex h-9 cursor-pointer items-center gap-2 rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground shadow-card hover:bg-primary/90"><Upload className="size-4" /> {table ? "Vybrat jiný soubor" : "Vybrat CSV soubor"}</label>
               {fileName && <span className="text-sm text-muted-foreground">{fileName} · {table!.length - 1} řádků</span>}
-              <button type="button" onClick={downloadSample} className="text-sm text-primary hover:underline">Stáhnout vzorový CSV</button>
+              <button type="button" onClick={downloadSample} className="text-sm text-accent-foreground hover:underline">Stáhnout vzorový CSV</button>
             </div>
 
             {table && (

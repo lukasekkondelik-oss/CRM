@@ -1,11 +1,11 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Inter, Sora } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ThemedToaster } from "@/components/themed-toaster";
 import "./globals.css";
 
-const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin", "latin-ext"] });
-const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin", "latin-ext"] });
+const inter = Inter({ variable: "--font-inter", subsets: ["latin", "latin-ext"], weight: ["400", "500", "600"], display: "swap" });
+const sora = Sora({ variable: "--font-sora", subsets: ["latin", "latin-ext"], weight: ["500", "600"], display: "swap" });
 
 export const metadata: Metadata = {
   title: { default: "nexdeals", template: "%s · nexdeals" },
@@ -15,12 +15,12 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: [{ media: "(prefers-color-scheme: light)", color: "#fafafc" }, { media: "(prefers-color-scheme: dark)", color: "#14151a" }],
+  themeColor: [{ media: "(prefers-color-scheme: light)", color: "#f6f7fb" }, { media: "(prefers-color-scheme: dark)", color: "#0b0d14" }],
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="cs" suppressHydrationWarning className={`${geistSans.variable} ${geistMono.variable}`}>
+    <html lang="cs" suppressHydrationWarning className={`${inter.variable} ${sora.variable}`}>
       <body className="min-h-dvh">
         <ThemeProvider>
           {children}

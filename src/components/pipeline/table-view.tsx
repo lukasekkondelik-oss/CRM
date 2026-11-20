@@ -153,7 +153,7 @@ export function TableView({ deals, stages, members, persons, orgs, now, today, o
                 <tr key={d.id} className={cn("hover:bg-muted/40", selected.has(d.id) && "bg-accent/40")}>
                   <td className="px-3"><input type="checkbox" aria-label={`Vybrat ${d.title}`} checked={selected.has(d.id)} onChange={() => toggle(d.id)} /></td>
                   <td className="px-3 py-2.5">
-                    <Link href={`/dealy/${d.id}`} className="font-medium hover:text-primary hover:underline">{d.title}</Link>
+                    <Link href={`/dealy/${d.id}`} className="font-medium hover:text-accent-foreground hover:underline">{d.title}</Link>
                     <span className="ml-2 inline-flex gap-1 align-middle">
                       {STATUS_BADGE[d.status]}
                       {deliveryBadge(d)}

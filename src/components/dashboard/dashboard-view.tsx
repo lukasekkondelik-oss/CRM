@@ -37,7 +37,7 @@ function Kpi({ icon: Icon, label, value, hint }: { icon: typeof Wallet; label: s
     <Card>
       <CardContent className="p-5">
         <p className="flex items-center gap-2 text-xs font-medium text-muted-foreground"><Icon className="size-3.5" /> {label}</p>
-        <p className="mt-2 text-2xl font-semibold tabular-nums tracking-tight sm:text-[26px]">{value}</p>
+        <p className="font-display mt-2 text-[28px] font-semibold leading-[1.1] tabular-nums sm:text-[32px]">{value}</p>
         <p className="mt-1 text-xs text-muted-foreground">{hint}</p>
       </CardContent>
     </Card>
@@ -135,8 +135,8 @@ export function DashboardView({ deals, stages, pipelines, members, activities, u
                 <CardTitle className="flex flex-wrap items-center justify-between gap-2 text-sm">
                   <span>Vyhrané vs prohrané <span className="font-normal text-muted-foreground">· po měsících</span></span>
                   <span className="viz-root flex items-center gap-3 text-xs font-normal text-muted-foreground">
-                    <span className="flex items-center gap-1.5"><span className="size-2.5 rounded-sm" style={{ background: "var(--series-1)" }} /> Vyhráno</span>
-                    <span className="flex items-center gap-1.5"><span className="size-2.5 rounded-sm" style={{ background: "var(--series-2)" }} /> Prohráno</span>
+                    <span className="flex items-center gap-1.5"><span className="size-2.5 rounded-sm" style={{ background: "var(--success)" }} /> Vyhráno</span>
+                    <span className="flex items-center gap-1.5"><span className="size-2.5 rounded-sm" style={{ background: "var(--danger)" }} /> Prohráno</span>
                   </span>
                 </CardTitle>
               </CardHeader>
@@ -155,7 +155,7 @@ export function DashboardView({ deals, stages, pipelines, members, activities, u
 
           <div className="grid gap-4 xl:grid-cols-3">
             <ListCard title={owner && owner !== userId ? `Dnešní aktivity – ${actOwnerName ?? ""}` : "Moje dnešní aktivity"} icon={CalendarCheck} count={todays.length}
-              footer={<Link href="/aktivity" className="mt-3 inline-block text-sm text-primary hover:underline">Všechny aktivity →</Link>}>
+              footer={<Link href="/aktivity" className="mt-3 inline-block text-sm text-accent-foreground hover:underline">Všechny aktivity →</Link>}>
               {todays.length === 0 ? <p className="rounded-lg bg-muted px-3 py-4 text-sm text-muted-foreground">Na dnešek nemáš nic naplánováno ani po termínu.</p> : (
                 <ul className="divide-y">
                   {todays.slice(0, MAX).map((a) => {
@@ -167,7 +167,7 @@ export function DashboardView({ deals, stages, pipelines, members, activities, u
                         <Icon className={cn("size-4 shrink-0", overdue ? "text-danger" : "text-muted-foreground")} />
                         <div className="min-w-0 flex-1">
                           <p className="truncate text-sm font-medium">{a.subject}</p>
-                          <p className="truncate text-xs text-muted-foreground">{deal ? <Link href={`/dealy/${deal.id}`} className="hover:text-primary hover:underline">{deal.title}</Link> : "Bez dealu"}</p>
+                          <p className="truncate text-xs text-muted-foreground">{deal ? <Link href={`/dealy/${deal.id}`} className="hover:text-accent-foreground hover:underline">{deal.title}</Link> : "Bez dealu"}</p>
                         </div>
                         <span className={cn("whitespace-nowrap text-xs", overdue ? "font-medium text-danger" : "text-muted-foreground")}>
                           {overdue ? relativeDay(a.due_date!, today) : a.due_time ? a.due_time.slice(0, 5) : "Dnes"}
@@ -185,7 +185,7 @@ export function DashboardView({ deals, stages, pipelines, members, activities, u
                 <ul className="divide-y">
                   {noNext.slice(0, MAX).map((d) => (
                     <li key={d.id}>
-                      <Link href={`/dealy/${d.id}`} className="flex items-center justify-between gap-3 py-2 hover:text-primary">
+                      <Link href={`/dealy/${d.id}`} className="flex items-center justify-between gap-3 py-2 hover:text-accent-foreground">
                         <span className="min-w-0"><span className="block truncate text-sm font-medium">{d.title}</span><span className="text-xs text-muted-foreground">{stageMap.get(d.stage_id)?.name}</span></span>
                         <span className="flex items-center gap-2 whitespace-nowrap text-sm tabular-nums"><TriangleAlert className="size-4 text-warning" />{formatCZK(d.value)}</span>
                       </Link>
@@ -201,7 +201,7 @@ export function DashboardView({ deals, stages, pipelines, members, activities, u
                 <ul className="divide-y">
                   {rotting.slice(0, MAX).map(({ deal, stage, days }) => (
                     <li key={deal.id}>
-                      <Link href={`/dealy/${deal.id}`} className="flex items-center justify-between gap-3 py-2 hover:text-primary">
+                      <Link href={`/dealy/${deal.id}`} className="flex items-center justify-between gap-3 py-2 hover:text-accent-foreground">
                         <span className="min-w-0"><span className="block truncate text-sm font-medium">{deal.title}</span><span className="text-xs text-muted-foreground">{stage?.name} · limit {stage?.rotting_days} dní</span></span>
                         <span className="flex items-center gap-2 whitespace-nowrap text-sm"><CircleAlert className="size-4 text-danger" /><span className="font-medium text-danger">{days} dní</span></span>
                       </Link>

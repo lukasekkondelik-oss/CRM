@@ -63,7 +63,7 @@ export function ActivityCalendar({ activities, today, mode, anchor, onMode, onAn
           <Button variant="outline" size="icon" aria-label="Předchozí" onClick={() => step(-1)}><ChevronLeft /></Button>
           <Button variant="outline" size="icon" aria-label="Další" onClick={() => step(1)}><ChevronRight /></Button>
           <Button variant="outline" onClick={() => onAnchor(today)}>Dnes</Button>
-          <h2 className="ml-2 text-base font-semibold capitalize">{title}</h2>
+          <h2 className="font-display ml-2 text-base font-semibold capitalize">{title}</h2>
         </div>
         <div className="flex rounded-lg border bg-card p-0.5" role="group" aria-label="Rozsah kalendáře">
           {(["week", "month"] as const).map((m) => (

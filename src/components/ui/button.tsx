@@ -7,12 +7,12 @@ export const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground shadow-card hover:bg-primary/90",
-        secondary: "bg-muted text-foreground hover:bg-muted/70",
-        outline: "border border-input bg-card hover:bg-muted",
+        default: "bg-primary text-primary-foreground hover:bg-primary-hover active:bg-primary-active",
+        secondary: "bg-muted text-foreground hover:bg-surface-3",
+        outline: "border border-input bg-transparent text-foreground hover:bg-muted",
         ghost: "hover:bg-muted",
-        destructive: "bg-danger text-white hover:bg-danger/90",
-        success: "bg-success text-white hover:bg-success/90",
+        destructive: "bg-danger text-on-danger hover:bg-danger/90",
+        success: "bg-success text-on-success hover:bg-success/90",
       },
       size: {
         default: "h-9 px-4",

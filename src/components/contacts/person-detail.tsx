@@ -61,10 +61,10 @@ export function PersonDetail({ data, today }: { data: Data; today: string }) {
           </div>
           <p className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
             {person.position && <span>{person.position}</span>}
-            {org && <Link href={`/firmy/${org.id}`} className="hover:text-primary hover:underline">{org.name}</Link>}
-            {person.email && <a href={`mailto:${person.email}`} className="text-primary hover:underline">{person.email}</a>}
-            {person.phone && <a href={telHref(person.phone)} className="text-primary hover:underline">{person.phone}</a>}
-            {person.web && <a href={webHref(person.web)} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">{person.web}</a>}
+            {org && <Link href={`/firmy/${org.id}`} className="hover:text-accent-foreground hover:underline">{org.name}</Link>}
+            {person.email && <a href={`mailto:${person.email}`} className="text-accent-foreground hover:underline">{person.email}</a>}
+            {person.phone && <a href={telHref(person.phone)} className="text-accent-foreground hover:underline">{person.phone}</a>}
+            {person.web && <a href={webHref(person.web)} target="_blank" rel="noopener noreferrer" className="text-accent-foreground hover:underline">{person.web}</a>}
           </p>
         </div>
         <Button variant="ghost" size="icon" aria-label="Smazat osobu" onClick={() => setDeleteOpen(true)}><Trash2 /></Button>

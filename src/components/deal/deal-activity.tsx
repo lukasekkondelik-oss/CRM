@@ -1,11 +1,12 @@
 "use client";
 
+import { CheckMark } from "@/components/ui/check-mark";
 import { needsNextStep } from "@/lib/deals/delivery";
 import { useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { ActivityDialog } from "@/components/activities/activity-dialog";
-import { Calendar, CheckCircle2, Circle, Clock, History, Loader2, Mail, MessageSquare, Phone, Plus, StickyNote, Users, Flag, ListChecks } from "lucide-react";
+import { Calendar, CheckCircle2, Clock, History, Loader2, Mail, MessageSquare, Phone, Plus, StickyNote, Users, Flag, ListChecks } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -114,10 +115,10 @@ export function DealActivity({ deal, activities, setActivities, notes, setNotes,
                 const overdue = !!a.due_date && a.due_date < today;
                 return (
                   <li key={a.id} className="flex items-center gap-3 py-2.5">
-                    <button type="button" aria-label="Označit jako hotové" onClick={() => toggleDone(a)} className="text-muted-foreground hover:text-success"><Circle className="size-5" /></button>
+                    <button type="button" aria-label="Označit jako hotové" onClick={() => toggleDone(a)} className="group/check"><CheckMark done={false} /></button>
                     <Icon className={cn("size-4 shrink-0", overdue ? "text-danger" : "text-muted-foreground")} />
                     <div className="min-w-0 flex-1">
-                      <button type="button" onClick={() => setDialog({ mode: "edit", activity: a })} className="block max-w-full truncate text-left text-sm font-medium hover:text-primary">{a.subject}</button>
+                      <button type="button" onClick={() => setDialog({ mode: "edit", activity: a })} className="block max-w-full truncate text-left text-sm font-medium hover:text-accent-foreground">{a.subject}</button>
                       <p className="text-xs text-muted-foreground">{ACTIVITY_TYPES[a.type]} · {memberName(a.assigned_to)}</p>
                     </div>
                     <span className={cn("flex items-center gap-1 whitespace-nowrap text-xs", overdue ? "font-medium text-danger" : "text-muted-foreground")}>
@@ -138,13 +139,13 @@ export function DealActivity({ deal, activities, setActivities, notes, setNotes,
             <ul className="divide-y">
               {(showAllDone ? done : done.slice(0, 3)).map((a) => (
                 <li key={a.id} className="flex items-center gap-3 py-2">
-                  <button type="button" aria-label="Vrátit mezi plánované" onClick={() => toggleDone(a)} className="text-success"><CheckCircle2 className="size-5" /></button>
+                  <button type="button" aria-label="Vrátit mezi plánované" onClick={() => toggleDone(a)}><CheckMark done /></button>
                   <p className="min-w-0 flex-1 truncate text-sm text-muted-foreground line-through">{a.subject}</p>
                   <span className="text-xs text-muted-foreground">{formatDate(a.done_at)}</span>
                 </li>
               ))}
             </ul>
-            {done.length > 3 && <button type="button" onClick={() => setShowAllDone((s) => !s)} className="mt-2 text-sm text-primary hover:underline">{showAllDone ? "Zobrazit méně" : `Zobrazit vše (${done.length})`}</button>}
+            {done.length > 3 && <button type="button" onClick={() => setShowAllDone((s) => !s)} className="mt-2 text-sm text-accent-foreground hover:underline">{showAllDone ? "Zobrazit méně" : `Zobrazit vše (${done.length})`}</button>}
           </CardContent>
         </Card>
       )}

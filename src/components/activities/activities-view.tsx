@@ -1,10 +1,11 @@
 "use client";
 
+import { CheckMark } from "@/components/ui/check-mark";
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { CalendarCheck, CalendarDays, CheckCircle2, Circle, List, Plus } from "lucide-react";
+import { CalendarCheck, CalendarDays, List, Plus } from "lucide-react";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -125,18 +126,18 @@ export function ActivitiesView({ initial, deals: initialDeals, persons, members,
     return (
       <li className="flex items-center gap-3 px-3 py-2.5">
         <button type="button" aria-label={a.done ? "Vrátit mezi nedokončené" : "Označit jako hotové"} onClick={() => setDone(a, !a.done)}
-          className={cn("shrink-0", a.done ? "text-success" : "text-muted-foreground hover:text-success")}>
-          {a.done ? <CheckCircle2 className="size-5" /> : <Circle className="size-5" />}
+          className="group/check shrink-0">
+          <CheckMark done={a.done} />
         </button>
         <Icon className={cn("size-4 shrink-0", overdue ? "text-danger" : "text-muted-foreground")} />
         <div className="min-w-0 flex-1">
-          <button type="button" onClick={() => setDialog({ mode: "edit", activity: a })} className={cn("block max-w-full truncate text-left text-sm font-medium hover:text-primary", a.done && "text-muted-foreground line-through")}>
+          <button type="button" onClick={() => setDialog({ mode: "edit", activity: a })} className={cn("block max-w-full truncate text-left text-sm font-medium hover:text-accent-foreground", a.done && "text-subtle line-through")}>
             {a.subject}
           </button>
           <p className="truncate text-xs text-muted-foreground">
             {ACTIVITY_TYPES[a.type]}
-            {deal && <> · <Link href={`/dealy/${deal.id}`} className="hover:text-primary hover:underline">{deal.title}</Link></>}
-            {person && <> · <Link href={`/osoby/${person.id}`} className="hover:text-primary hover:underline">{personName(person)}</Link></>}
+            {deal && <> · <Link href={`/dealy/${deal.id}`} className="hover:text-accent-foreground hover:underline">{deal.title}</Link></>}
+            {person && <> · <Link href={`/osoby/${person.id}`} className="hover:text-accent-foreground hover:underline">{personName(person)}</Link></>}
           </p>
         </div>
         {a.due_time && <span className={cn("text-xs tabular-nums", overdue ? "text-danger" : "text-muted-foreground")}>{a.due_time.slice(0, 5)}</span>}
@@ -165,10 +166,10 @@ export function ActivitiesView({ initial, deals: initialDeals, persons, members,
         description="Co máš dnes udělat – hovory, schůzky, úkoly a termíny."
         actions={
           <>
-            <div className="flex rounded-lg border bg-card p-0.5" role="group" aria-label="Zobrazení">
+            <div className="flex rounded-[10px] border bg-surface-1 p-1" role="group" aria-label="Zobrazení">
               {([["list", List, "Seznam"], ["calendar", CalendarDays, "Kalendář"]] as const).map(([v, Icon, label]) => (
                 <button key={v} type="button" aria-pressed={view === v} onClick={() => setView(v)}
-                  className={cn("flex h-9 items-center gap-1.5 rounded-md px-3 text-sm font-medium", view === v ? "bg-accent text-accent-foreground" : "text-muted-foreground hover:text-foreground")}>
+                  className={cn("flex h-8 items-center gap-1.5 rounded-lg px-3 text-sm font-medium", view === v ? "bg-surface-3 text-foreground" : "text-muted-foreground hover:text-foreground")}>
                   <Icon className="size-4" /> <span className="hidden sm:inline">{label}</span>
                 </button>
               ))}
@@ -180,12 +181,12 @@ export function ActivitiesView({ initial, deals: initialDeals, persons, members,
 
       <div className="mb-4 flex flex-wrap items-center gap-2">
         {view === "list" && (
-          <div className="flex flex-wrap rounded-lg border bg-card p-0.5" role="tablist" aria-label="Období">
+          <div className="flex flex-wrap rounded-[10px] border bg-surface-1 p-1" role="tablist" aria-label="Období">
             {TABS.map((t) => (
               <button key={t.key} role="tab" type="button" aria-selected={tab === t.key} onClick={() => setTab(t.key)}
-                className={cn("flex h-9 items-center gap-2 rounded-md px-3 text-sm font-medium", tab === t.key ? "bg-accent text-accent-foreground" : "text-muted-foreground hover:text-foreground")}>
+                className={cn("flex h-8 items-center gap-2 rounded-lg px-3 text-sm font-medium", tab === t.key ? "bg-surface-3 text-foreground" : "text-muted-foreground hover:text-foreground")}>
                 {t.label}
-                <span className={cn("rounded-full px-1.5 text-[11px] font-semibold tabular-nums", t.key === "overdue" && counts.overdue > 0 ? "bg-danger text-white" : "bg-muted text-muted-foreground")}>{counts[t.key]}</span>
+                <span className={cn("rounded-full px-1.5 text-[11px] font-semibold tabular-nums", t.key === "overdue" && counts.overdue > 0 ? "bg-danger-soft text-danger" : tab === t.key ? "bg-primary text-primary-foreground" : "bg-surface-3 text-subtle")}>{counts[t.key]}</span>
               </button>
             ))}
           </div>
@@ -212,7 +213,7 @@ export function ActivitiesView({ initial, deals: initialDeals, persons, members,
         <div className="flex flex-col gap-5">
           {groups.map(([key, items]) => (
             <section key={key} aria-label={groupLabel(key)}>
-              <h2 className={cn("mb-1.5 flex items-center gap-2 px-1 text-xs font-semibold uppercase tracking-wide", key !== "none" && key < today ? "text-danger" : "text-muted-foreground")}>
+              <h2 className={cn("mb-1.5 flex items-center gap-2 px-1 text-xs font-semibold uppercase tracking-[0.04em]", key !== "none" && key < today ? "text-danger" : "text-subtle")}>
                 {groupLabel(key)} <Badge variant="muted">{items.length}</Badge>
               </h2>
               <ul className="divide-y rounded-xl border bg-card shadow-card">{items.map((a) => <Row key={a.id} a={a} />)}</ul>
@@ -220,9 +221,9 @@ export function ActivitiesView({ initial, deals: initialDeals, persons, members,
           ))}
           {tab === "all" && done.length > 0 && (
             <section aria-label="Hotové">
-              <h2 className="mb-1.5 px-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Hotovo – posledních 30 dní ({done.length})</h2>
+              <h2 className="mb-1.5 px-1 text-xs font-semibold uppercase tracking-[0.04em] text-subtle">Hotovo – posledních 30 dní ({done.length})</h2>
               <ul className="divide-y rounded-xl border bg-card shadow-card">{(showDone ? done : done.slice(0, 5)).map((a) => <Row key={a.id} a={a} />)}</ul>
-              {done.length > 5 && <button type="button" onClick={() => setShowDone((s) => !s)} className="mt-2 px-1 text-sm text-primary hover:underline">{showDone ? "Zobrazit méně" : `Zobrazit vše (${done.length})`}</button>}
+              {done.length > 5 && <button type="button" onClick={() => setShowDone((s) => !s)} className="mt-2 px-1 text-sm text-accent-foreground hover:underline">{showDone ? "Zobrazit méně" : `Zobrazit vše (${done.length})`}</button>}
             </section>
           )}
         </div>

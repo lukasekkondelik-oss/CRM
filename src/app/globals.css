@@ -2,61 +2,104 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
-/* ---- Design tokeny (světlý režim) ---- */
+/*
+ * nexdeals – vizuální identita „Indigo focus“.
+ * Hodnoty vycházejí z design briefu (tokeny --nd-*), názvy zůstávají sémantické (shadcn styl),
+ * takže komponenty se přebarvují jen výměnou proměnných.
+ */
+
+/* ---- Světlý režim ---- */
 :root {
-  --background: oklch(0.985 0.003 265);
-  --foreground: oklch(0.21 0.02 265);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.21 0.02 265);
-  --muted: oklch(0.96 0.005 265);
-  --muted-foreground: oklch(0.52 0.02 265);
-  --border: oklch(0.92 0.006 265);
-  --input: oklch(0.9 0.008 265);
-  --ring: oklch(0.55 0.21 272);
+  --background: #f6f7fb;
+  --foreground: #0f1222;
+  --card: #ffffff;               /* surface-2 */
+  --card-foreground: #0f1222;
+  --surface-1: #ffffff;          /* sidebar, panely */
+  --surface-3: #ffffff;          /* popovery, dropdowny, modaly */
+  --muted: #f0f1f8;              /* hover řádku / položky */
+  --muted-foreground: #4e546e;   /* text-2 */
+  --subtle: #8a8fa8;             /* text-3: placeholdery, popisky (jen velké / doprovodné) */
+  --border: #e4e6ef;
+  --input: #d2d5e3;              /* border-strong */
+  --ring: rgba(79, 83, 227, 0.35);
 
-  /* jediná výrazná akcentní barva */
-  --primary: oklch(0.52 0.22 272);
-  --primary-foreground: oklch(0.99 0 0);
-  --accent: oklch(0.95 0.025 272);
-  --accent-foreground: oklch(0.38 0.17 272);
+  --primary: #4f53e3;
+  --primary-hover: #4246d1;
+  --primary-active: #3a3dbe;
+  --primary-foreground: #ffffff;
+  --accent: #ecedfe;             /* primary-soft */
+  --accent-foreground: #3a3dbe;  /* primary-text */
 
-  /* stavy */
-  --success: oklch(0.62 0.16 150);
-  --success-soft: oklch(0.95 0.05 150);
-  --warning: oklch(0.78 0.16 80);
-  --warning-soft: oklch(0.96 0.07 90);
-  --danger: oklch(0.6 0.22 25);
-  --danger-soft: oklch(0.95 0.04 25);
+  --success: #0e8f6e;
+  --success-soft: #e3fbf4;
+  --on-success: #ffffff;
+  --warning: #b26b00;
+  --warning-soft: #fff4e0;
+  --on-warning: #3a2500;
+  --danger: #d23f3f;
+  --danger-soft: #fdecec;
+  --on-danger: #ffffff;
 
-  --sidebar: oklch(1 0 0);
-  --radius: 0.75rem;
+  --sidebar: #ffffff;
+  --shadow-card-v: 0 1px 2px rgba(15, 18, 34, 0.06);
+  --shadow-pop-v: 0 8px 24px rgba(15, 18, 34, 0.12);
+
+  /* fáze pipeline: indigová progrese (ve světlém režimu o stupeň tmavší pro kontrast) */
+  --stage-1: #6b7088;
+  --stage-2: #7b7fe8;
+  --stage-3: #6368e6;
+  --stage-4: #4f53e3;
+  --stage-5: #3a3dbe;
+
+  --series-1: #4f53e3;
+  --series-2: #d23f3f;
 }
 
-/* ---- Dark mode ---- */
+/* ---- Tmavý režim (výchozí) ---- */
 .dark {
-  --background: oklch(0.16 0.012 265);
-  --foreground: oklch(0.96 0.005 265);
-  --card: oklch(0.205 0.014 265);
-  --card-foreground: oklch(0.96 0.005 265);
-  --muted: oklch(0.25 0.014 265);
-  --muted-foreground: oklch(0.7 0.015 265);
-  --border: oklch(0.3 0.015 265);
-  --input: oklch(0.33 0.016 265);
-  --ring: oklch(0.68 0.19 272);
+  --background: #0b0d14;
+  --foreground: #e8eaf2;
+  --card: #161a28;
+  --card-foreground: #e8eaf2;
+  --surface-1: #11141f;
+  --surface-3: #1c2032;
+  --muted: #1a1e2e;
+  --muted-foreground: #a9aec6;
+  --subtle: #6e7491;
+  --border: #232838;
+  --input: #2f3549;
+  --ring: rgba(91, 95, 239, 0.45);
 
-  --primary: oklch(0.65 0.2 272);
-  --primary-foreground: oklch(0.14 0.02 265);
-  --accent: oklch(0.28 0.06 272);
-  --accent-foreground: oklch(0.88 0.08 272);
+  --primary: #5b5fef;
+  --primary-hover: #6e72f5;
+  --primary-active: #4b4fdb;
+  --primary-foreground: #ffffff;
+  --accent: rgba(91, 95, 239, 0.14);
+  --accent-foreground: #a5a8ff;
 
-  --success: oklch(0.72 0.16 150);
-  --success-soft: oklch(0.28 0.06 150);
-  --warning: oklch(0.82 0.15 85);
-  --warning-soft: oklch(0.3 0.06 85);
-  --danger: oklch(0.7 0.19 25);
-  --danger-soft: oklch(0.29 0.07 25);
+  --success: #95f2d9;
+  --success-soft: rgba(149, 242, 217, 0.12);
+  --on-success: #04342c;
+  --warning: #ffb547;
+  --warning-soft: rgba(255, 181, 71, 0.12);
+  --on-warning: #3a2500;
+  --danger: #f26b6b;
+  --danger-soft: rgba(242, 107, 107, 0.12);
+  --on-danger: #ffffff;
 
-  --sidebar: oklch(0.19 0.013 265);
+  --sidebar: #11141f;
+  /* v tmavém režimu žádné stíny – hloubku dělají plochy a okraje */
+  --shadow-card-v: none;
+  --shadow-pop-v: none;
+
+  --stage-1: #8a8fa8;
+  --stage-2: #9ea1f7;
+  --stage-3: #7c80f3;
+  --stage-4: #5b5fef;
+  --stage-5: #4346c9;
+
+  --series-1: #5b5fef;
+  --series-2: #f26b6b;
 }
 
 @theme inline {
@@ -64,33 +107,43 @@
   --color-foreground: var(--foreground);
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
+  --color-surface-1: var(--surface-1);
+  --color-surface-3: var(--surface-3);
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
+  --color-subtle: var(--subtle);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
   --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-active: var(--primary-active);
   --color-primary-foreground: var(--primary-foreground);
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
   --color-success: var(--success);
   --color-success-soft: var(--success-soft);
+  --color-on-success: var(--on-success);
   --color-warning: var(--warning);
   --color-warning-soft: var(--warning-soft);
+  --color-on-warning: var(--on-warning);
   --color-danger: var(--danger);
   --color-danger-soft: var(--danger-soft);
+  --color-on-danger: var(--on-danger);
   --color-sidebar: var(--sidebar);
 
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
+  /* radiusy: inputy a tlačítka 8px, karty 12px, modaly 16px (rounded-2xl), pills 999px */
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
 
-  --shadow-card: 0 1px 2px oklch(0.2 0.02 265 / 0.05), 0 1px 3px oklch(0.2 0.02 265 / 0.04);
-  --shadow-pop: 0 8px 24px oklch(0.2 0.02 265 / 0.12);
+  --shadow-card: var(--shadow-card-v);
+  --shadow-pop: var(--shadow-pop-v);
 
-  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
-  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-sora), var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
 @layer base {
@@ -103,17 +156,29 @@
   body {
     @apply bg-background text-foreground font-sans antialiased;
   }
+  /* Sora: nadpisy stránek a sekcí, velká čísla */
+  h1, .font-display {
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
+  }
+  h1 {
+    font-weight: 600;
+  }
+  /* čísla a data lícují pod sebou */
+  td, th, time, .tabular-nums {
+    font-variant-numeric: tabular-nums;
+  }
   :focus-visible {
-    @apply outline-2 outline-offset-2 outline-ring;
+    outline: none;
+    box-shadow: 0 0 0 3px var(--ring);
+  }
+  button, a, input, select, textarea {
+    transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease;
   }
 }
 
-/* ---- Grafy (validovaná paleta: kategorické sloty 1 a 2, světlý/tmavý režim) ---- */
+/* ---- Grafy: indigová škála, vyhráno mint, prohráno červená (barvy dodávají tokeny) ---- */
 .viz-root {
-  --series-1: #2a78d6;
-  --series-2: #eb6834;
-}
-.dark .viz-root {
-  --series-1: #3987e5;
-  --series-2: #d95926;
+  --viz-won: var(--success);
+  --viz-lost: var(--danger);
 }

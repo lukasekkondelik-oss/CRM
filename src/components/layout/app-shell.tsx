@@ -32,7 +32,7 @@ function SidebarContent({ user, workspaceName, activityBadge, deliveryCount, onN
     <div className="flex h-full flex-col">
       <div className="px-5 pb-4 pt-5">
         <Brand />
-        <p className="mt-3 truncate rounded-lg bg-muted px-3 py-1.5 text-xs font-medium text-muted-foreground">
+        <p className="mt-3 truncate rounded-lg border bg-card px-3 py-1.5 text-xs font-medium text-muted-foreground">
           {workspaceName}
         </p>
       </div>
@@ -41,7 +41,7 @@ function SidebarContent({ user, workspaceName, activityBadge, deliveryCount, onN
         <button type="button" onClick={() => { onNavigate?.(); onSearch(); }} aria-label="Hledat (Ctrl+K)"
           className="flex h-9 w-full items-center gap-2 rounded-lg border bg-card px-3 text-sm text-muted-foreground shadow-card hover:bg-muted">
           <Search className="size-4" /> <span className="flex-1 text-left">Hledat…</span>
-          <kbd className="rounded border bg-muted px-1.5 text-[10px] font-medium">Ctrl K</kbd>
+          <kbd className="rounded border bg-surface-3 px-1.5 text-[10px] font-medium">Ctrl K</kbd>
         </button>
       </div>
 
@@ -55,7 +55,7 @@ function SidebarContent({ user, workspaceName, activityBadge, deliveryCount, onN
               onClick={onNavigate}
               aria-current={active ? "page" : undefined}
               className={cn(
-                "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                "flex items-center gap-3 rounded-[10px] px-3 py-2 text-sm font-medium transition-colors",
                 active
                   ? "bg-accent text-accent-foreground"
                   : "text-muted-foreground hover:bg-muted hover:text-foreground",
@@ -65,20 +65,16 @@ function SidebarContent({ user, workspaceName, activityBadge, deliveryCount, onN
               <span className="flex-1">{label}</span>
               {href === "/realizace" && !!deliveryCount && deliveryCount > 0 && (
                 <span title={`Dealů v realizaci a předplatných: ${deliveryCount}`} aria-label={`V realizaci: ${deliveryCount}`}
-                  className="rounded-full bg-muted px-1.5 py-0.5 text-[11px] font-semibold leading-none text-muted-foreground">{deliveryCount}</span>
+                  className={cn("rounded-full px-1.5 py-0.5 text-[11px] font-semibold leading-none tabular-nums", active ? "bg-primary text-primary-foreground" : "bg-surface-3 text-muted-foreground")}>{deliveryCount}</span>
               )}
               {href === "/aktivity" && activityBadge && activityBadge.today + activityBadge.overdue > 0 && (
                 <span
                   title={`Dnes: ${activityBadge.today}, po termínu: ${activityBadge.overdue}`}
                   aria-label={`Aktivity k vyřízení: dnes ${activityBadge.today}, po termínu ${activityBadge.overdue}`}
-                  className={cn(
-                    "flex items-center gap-1 rounded-full px-1.5 text-[11px] font-semibold tabular-nums",
-                    activityBadge.overdue > 0 ? "bg-danger text-white" : "bg-primary text-primary-foreground",
-                  )}
+                  className="flex items-center gap-1 text-[11px] font-semibold tabular-nums"
                 >
-                  {activityBadge.overdue > 0 && <span>{activityBadge.overdue}</span>}
-                  {activityBadge.overdue > 0 && activityBadge.today > 0 && <span className="opacity-60">/</span>}
-                  {activityBadge.today > 0 && <span>{activityBadge.today}</span>}
+                  {activityBadge.overdue > 0 && <span className="rounded-full bg-danger-soft px-1.5 py-0.5 leading-none text-danger">{activityBadge.overdue}</span>}
+                  {activityBadge.today > 0 && <span className="rounded-full bg-warning-soft px-1.5 py-0.5 leading-none text-warning">{activityBadge.today}</span>}
                 </span>
               )}
             </Link>

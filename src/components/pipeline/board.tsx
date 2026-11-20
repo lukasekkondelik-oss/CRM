@@ -1,5 +1,6 @@
 "use client";
 
+import { stageColor } from "@/lib/deals/stage-colors";
 import { memo, useCallback, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -169,13 +170,14 @@ export function Board(props: Props) {
       onDragCancel={finish}
     >
       <div className="-mx-4 flex snap-x snap-mandatory items-start gap-3 overflow-x-auto px-4 pb-28 sm:-mx-6 sm:px-6 lg:mx-0 lg:px-0">
-        {stages.map((stage) => {
+        {stages.map((stage, index) => {
           const ids = cols[stage.id] ?? [];
           const sum = ids.reduce((s, id) => s + Number(dealMap.get(id)?.value ?? 0), 0);
           return (
             <Column
               key={stage.id}
               stage={stage}
+              color={stageColor(index, stages.length)}
               ids={ids}
               count={ids.length}
               sum={sum}
@@ -216,18 +218,18 @@ export function Board(props: Props) {
   );
 }
 
-function Column({ stage, ids, count, sum, onAdd, children }: {
-  stage: Stage; ids: string[]; count: number; sum: number; onAdd: () => void; children: React.ReactNode;
+function Column({ stage, color, ids, count, sum, onAdd, children }: {
+  stage: Stage; color: string; ids: string[]; count: number; sum: number; onAdd: () => void; children: React.ReactNode;
 }) {
   const { setNodeRef, isOver } = useDroppable({ id: stage.id });
   return (
     <section
       aria-label={stage.name}
-      className={cn("flex w-[84vw] max-w-80 shrink-0 snap-center flex-col rounded-xl bg-muted/50 p-2.5 sm:w-72 sm:snap-start", isOver && "bg-accent/60")}
+      className={cn("flex w-[84vw] max-w-80 shrink-0 snap-center flex-col rounded-xl border bg-surface-1 p-2.5 sm:w-72 sm:snap-start", isOver && "border-primary bg-accent")}
     >
       <header className="mb-2 flex items-start justify-between gap-2 px-1">
         <div className="min-w-0">
-          <h2 className="truncate text-sm font-semibold">{stage.name}</h2>
+          <h2 className="flex items-center gap-2 truncate font-sans text-sm font-semibold tracking-normal"><span aria-hidden className="size-2 shrink-0 rounded-full" style={{ background: color }} /><span className="truncate">{stage.name}</span></h2>
           <p className="text-xs text-muted-foreground">
             {count} {count === 1 ? "deal" : count >= 2 && count <= 4 ? "dealy" : "dealů"} · {formatCZK(sum)}
           </p>

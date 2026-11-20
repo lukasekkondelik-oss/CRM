@@ -43,7 +43,7 @@ function Table({ deals, subscription, ctx }: { deals: DeliveryDeal[]; subscripti
             const ends = d.delivery_ends_on;
             return (
               <tr key={d.id} className="hover:bg-muted/40">
-                <td className="px-3 py-2.5"><Link href={`/dealy/${d.id}`} className="font-medium hover:text-primary hover:underline">{d.title}</Link></td>
+                <td className="px-3 py-2.5"><Link href={`/dealy/${d.id}`} className="font-medium hover:text-accent-foreground hover:underline">{d.title}</Link></td>
                 <td className="px-3 py-2.5 text-muted-foreground">{[orgId ? orgMap.get(orgId) : null, person ? personName(person) : null].filter(Boolean).join(" · ") || "—"}</td>
                 <td className="px-3 py-2.5 text-right tabular-nums">{formatCZK(d.value)}</td>
                 <td className="px-3 py-2.5">{owner ? <span className="flex items-center gap-2"><Avatar name={owner.full_name} src={owner.avatar_url} className="size-6 text-[10px]" /><span className="hidden xl:inline">{owner.full_name}</span></span> : "—"}</td>
@@ -95,7 +95,7 @@ export default async function DeliveryPage() {
       {data.deals.length === 0 ? (
         <EmptyState icon={Truck} title="Nic se zrovna nerealizuje"
           description="Až některý deal označíš jako vyhraný, objeví se tady, dokud ho neodklikneš jako dodaný. Předplatné nastavíš v detailu dealu v panelu Dodání."
-          action={<Link href="/pipeline" className="text-sm font-medium text-primary hover:underline">Přejít na Pipeline</Link>} />
+          action={<Link href="/pipeline" className="text-sm font-medium text-accent-foreground hover:underline">Přejít na Pipeline</Link>} />
       ) : (
         <div className="flex flex-col gap-6">
           <div className="grid gap-4 sm:grid-cols-2">

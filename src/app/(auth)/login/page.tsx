@@ -27,7 +27,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
         />
         <p className="text-center text-sm text-muted-foreground">
           Nemáš účet?{" "}
-          <Link href={next ? `/registrace?next=${encodeURIComponent(next)}` : "/registrace"} className="font-medium text-primary hover:underline">
+          <Link href={next ? `/registrace?next=${encodeURIComponent(next)}` : "/registrace"} className="font-medium text-accent-foreground hover:underline">
             Zaregistruj se
           </Link>
         </p>

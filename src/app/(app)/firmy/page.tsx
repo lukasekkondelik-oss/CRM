@@ -37,7 +37,7 @@ export default async function OrgsPage({ searchParams }: { searchParams: Promise
         <>
           <div className="mb-4 flex flex-col gap-2 sm:flex-row"><SearchBox placeholder="Hledat název, IČO, web…" /><LabelFilter labels={labels} /></div>
           {total === 0 ? (
-            <EmptyState icon={Building2} title={p.q ? `Nic nenalezeno pro „${p.q}“` : "Žádný záznam s tímto štítkem"} description="Zkus jiné slovo nebo štítek, případně filtry zruš." action={<Link href={BASE} className="text-sm font-medium text-primary hover:underline">Zrušit filtry</Link>} />
+            <EmptyState icon={Building2} title={p.q ? `Nic nenalezeno pro „${p.q}“` : "Žádný záznam s tímto štítkem"} description="Zkus jiné slovo nebo štítek, případně filtry zruš." action={<Link href={BASE} className="text-sm font-medium text-accent-foreground hover:underline">Zrušit filtry</Link>} />
           ) : (
             <Card className="overflow-x-auto">
               <table className="w-full min-w-[760px] text-sm">
@@ -57,9 +57,9 @@ export default async function OrgsPage({ searchParams }: { searchParams: Promise
                     const owner = r.owner_id ? memberMap.get(r.owner_id) : undefined;
                     return (
                       <tr key={r.id} className="hover:bg-muted/40">
-                        <td className="px-3 py-2.5"><Link href={`/firmy/${r.id}`} className="font-medium hover:text-primary hover:underline">{r.name}</Link><LabelChips labels={labels} ids={r.labelIds} /></td>
+                        <td className="px-3 py-2.5"><Link href={`/firmy/${r.id}`} className="font-medium hover:text-accent-foreground hover:underline">{r.name}</Link><LabelChips labels={labels} ids={r.labelIds} /></td>
                         <td className="px-3 py-2.5 tabular-nums text-muted-foreground">{r.ico ?? "—"}</td>
-                        <td className="px-3 py-2.5">{r.web ? <a href={webHref(r.web)} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">{r.web}</a> : "—"}</td>
+                        <td className="px-3 py-2.5">{r.web ? <a href={webHref(r.web)} target="_blank" rel="noopener noreferrer" className="text-accent-foreground hover:underline">{r.web}</a> : "—"}</td>
                         <td className="px-3 py-2.5 text-muted-foreground">{r.personCount}</td>
                         <td className="px-3 py-2.5">{r.openDeals > 0 ? <Badge>{r.openDeals}</Badge> : <span className="text-muted-foreground">0</span>}</td>
                         <td className="px-3 py-2.5">{owner ? <span className="flex items-center gap-2"><Avatar name={owner.full_name} src={owner.avatar_url} className="size-6 text-[10px]" /><span className="hidden xl:inline">{owner.full_name}</span></span> : "—"}</td>

@@ -54,7 +54,7 @@ export function OrgDetail({ data, today }: { data: Data; today: string }) {
             className="h-auto py-0.5 text-2xl font-semibold tracking-tight" />
           <p className="mt-1 flex flex-wrap items-center gap-x-3 text-sm text-muted-foreground">
             {org.ico && <span>IČO {org.ico}</span>}
-            {org.web && <a href={webHref(org.web)} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">{org.web}</a>}
+            {org.web && <a href={webHref(org.web)} target="_blank" rel="noopener noreferrer" className="text-accent-foreground hover:underline">{org.web}</a>}
           </p>
         </div>
         <Button variant="ghost" size="icon" aria-label="Smazat firmu" onClick={() => setDeleteOpen(true)}><Trash2 /></Button>
@@ -103,12 +103,12 @@ export function OrgDetail({ data, today }: { data: Data; today: string }) {
                   {data.persons.map((p) => (
                     <li key={p.id} className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 py-2.5">
                       <div className="min-w-0">
-                        <Link href={`/osoby/${p.id}`} className="text-sm font-medium hover:text-primary hover:underline">{personName(p)}</Link>
+                        <Link href={`/osoby/${p.id}`} className="text-sm font-medium hover:text-accent-foreground hover:underline">{personName(p)}</Link>
                         {p.position && <p className="text-xs text-muted-foreground">{p.position}</p>}
                       </div>
                       <div className="flex flex-wrap items-center gap-x-4 text-sm">
-                        {p.email && <a href={`mailto:${p.email}`} className="text-primary hover:underline">{p.email}</a>}
-                        {p.phone && <a href={telHref(p.phone)} className="text-primary hover:underline">{p.phone}</a>}
+                        {p.email && <a href={`mailto:${p.email}`} className="text-accent-foreground hover:underline">{p.email}</a>}
+                        {p.phone && <a href={telHref(p.phone)} className="text-accent-foreground hover:underline">{p.phone}</a>}
                       </div>
                     </li>
                   ))}

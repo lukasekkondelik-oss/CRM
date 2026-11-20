@@ -165,7 +165,7 @@ function Form({ mode, members, userId, today, activity, deal: presetDeal, dealTi
           <Label>Deal</Label>
           {fixedDeal ? (
             (deal?.title ?? dealTitle) ? (
-              <Link href={`/dealy/${deal?.id ?? activity?.deal_id}`} className="flex h-10 items-center truncate text-sm text-primary hover:underline">{deal?.title ?? dealTitle}</Link>
+              <Link href={`/dealy/${deal?.id ?? activity?.deal_id}`} className="flex h-10 items-center truncate text-sm text-accent-foreground hover:underline">{deal?.title ?? dealTitle}</Link>
             ) : <span className="flex h-10 items-center text-sm text-muted-foreground">Bez dealu</span>
           ) : (
             <Combobox

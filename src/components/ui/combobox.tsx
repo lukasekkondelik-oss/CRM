@@ -91,14 +91,14 @@ export function Combobox({ options, value, onChange, search, onCreate, placehold
           "flex w-full items-center justify-between gap-2 text-left text-sm transition-colors",
           ghost
             ? "-mx-2 rounded-md px-2 py-1 hover:bg-muted"
-            : "h-10 rounded-lg border border-input bg-card px-3 shadow-card hover:bg-muted/50",
+            : "h-9 rounded-lg border bg-card px-3 shadow-card hover:border-input",
         )}
       >
         <span className={cn("truncate", !current && "text-muted-foreground")}>{current?.label ?? placeholder}</span>
         <ChevronDown className="size-4 shrink-0 text-muted-foreground" />
       </button>
       {open && (
-        <div className="absolute left-0 z-40 mt-1 w-full min-w-56 rounded-lg border bg-card p-1.5 shadow-pop">
+        <div className="absolute left-0 z-40 mt-1 w-full min-w-56 rounded-lg border bg-surface-3 p-1.5 shadow-pop">
           <input
             autoFocus
             value={q}
@@ -127,7 +127,7 @@ export function Combobox({ options, value, onChange, search, onCreate, placehold
                     {o.label}
                     {o.sub && <span className="ml-1.5 text-xs text-muted-foreground">{o.sub}</span>}
                   </span>
-                  {o.id === value && <Check className="size-4 text-primary" />}
+                  {o.id === value && <Check className="size-4 text-accent-foreground" />}
                 </button>
               </li>
             ))}
@@ -147,7 +147,7 @@ export function Combobox({ options, value, onChange, search, onCreate, placehold
                       setBusy(false);
                     }
                   }}
-                  className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm font-medium text-primary hover:bg-accent"
+                  className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm font-medium text-accent-foreground hover:bg-accent"
                 >
                   <Plus className="size-4" /> {createLabel} „{q.trim()}“
                 </button>

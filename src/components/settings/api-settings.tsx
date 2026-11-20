@@ -32,7 +32,7 @@ function CopyBlock({ label, text }: { label: string; text: string }) {
       <div className="mb-1 flex items-center justify-between">
         <span className="text-xs font-medium text-muted-foreground">{label}</span>
         <button type="button" onClick={async () => { try { await navigator.clipboard.writeText(text); setOk(true); setTimeout(() => setOk(false), 1500); } catch { toast.error("Kopírování se nepovedlo."); } }}
-          className="flex items-center gap-1 text-xs text-primary hover:underline">{ok ? <Check className="size-3" /> : <Copy className="size-3" />} {ok ? "Zkopírováno" : "Kopírovat"}</button>
+          className="flex items-center gap-1 text-xs text-accent-foreground hover:underline">{ok ? <Check className="size-3" /> : <Copy className="size-3" />} {ok ? "Zkopírováno" : "Kopírovat"}</button>
       </div>
       <pre className="overflow-x-auto rounded-lg border bg-muted/50 p-3 font-mono text-xs leading-relaxed">{text}</pre>
     </div>
@@ -226,7 +226,7 @@ export function ApiSettings({ apiKeys: initial, apiKeysAvailable, apiConfigured,
         <CardContent className="flex flex-col gap-4">
           <CopyBlock label="Příklad: dnešní a zpožděné aktivity" text={`curl "${origin}/api/v1/activities?assigned_to=me&due=overdue" \\\n  -H "Authorization: Bearer ${k}"`} />
           <CopyBlock label="Příklad: nový deal" text={`curl -X POST ${origin}/api/v1/deals \\\n  -H "Authorization: Bearer ${k}" -H "Content-Type: application/json" \\\n  -d '{"title":"Automatizace reportingu","value":80000,"organization_name":"Alfa Finance","stage_name":"Kontaktován"}'`} />
-          <p className="text-sm">Kompletní popis: <a href="/api/v1/openapi.json" target="_blank" rel="noopener noreferrer" className="font-medium text-primary hover:underline">OpenAPI (openapi.json)</a> – použitelný v Postmanu nebo Swagger UI.</p>
+          <p className="text-sm">Kompletní popis: <a href="/api/v1/openapi.json" target="_blank" rel="noopener noreferrer" className="font-medium text-accent-foreground hover:underline">OpenAPI (openapi.json)</a> – použitelný v Postmanu nebo Swagger UI.</p>
           <details className="text-sm"><summary className="cursor-pointer font-medium">Přehled endpointů ({endpoints.length})</summary>
             <ul className="mt-2 divide-y rounded-lg border font-mono text-xs">{endpoints.map((e) => (
               <li key={e.method + e.path} className="flex flex-wrap items-center gap-3 px-3 py-1.5"><span className="w-14 font-semibold uppercase">{e.method}</span><span className="min-w-0 flex-1 break-all">{e.path}</span><span className="font-sans text-muted-foreground">{e.summary}</span></li>
