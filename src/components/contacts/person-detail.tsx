@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { ArrowLeft, Briefcase, Building2, ExternalLink, Globe, Mail, Phone, Trash2, UserCog } from "lucide-react";
+import { ArrowLeft, Briefcase, Building2, ExternalLink, Globe, Mail, Phone, Tag, Trash2, UserCog } from "lucide-react";
 import { Avatar } from "@/components/ui/avatar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Combobox } from "@/components/ui/combobox";
@@ -19,6 +19,7 @@ import { personName, type OrgLite } from "@/lib/deals/helpers";
 import { formatDate } from "@/lib/format";
 import type { loadPerson } from "@/lib/data/contacts";
 import type { Person } from "@/lib/types";
+import { LabelPicker } from "@/components/labels/label-picker";
 import { ContactFeed } from "./contact-feed";
 import { InlineText, makePatcher, Row } from "./field-row";
 import { LinkedDeals } from "./linked-deals";
@@ -95,6 +96,9 @@ export function PersonDetail({ data, today }: { data: Data; today: string }) {
                   onCreate={async (q) => { try { const o = await createOrgQuick(q); setOrgs((os) => [...os, o]); await patch({ organization_id: o.id }); return o.id; } catch { toast.error("Firmu se nepodařilo vytvořit."); } }} />
                 {person.organization_id && <Link href={`/firmy/${person.organization_id}`} aria-label="Otevřít firmu" className={linkBtn}><ExternalLink className="size-3.5" /></Link>}
               </div>
+            </Row>
+            <Row icon={Tag} label="Štítky">
+              <LabelPicker target={{ table: "person_labels", fk: "person_id" }} entityId={person.id} labels={data.labels} selected={data.labelIds} />
             </Row>
             <Row icon={UserCog} label="Vlastník">
               <div className="flex items-center gap-2">

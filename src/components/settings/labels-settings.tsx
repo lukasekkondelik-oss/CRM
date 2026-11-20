@@ -87,7 +87,7 @@ export function LabelsSettings({ labels: initial, usage }: { labels: Label[]; us
         </Card>
       )}
       <ConfirmDialog open={!!del} onOpenChange={(o) => !o && setDel(null)} title={`Smazat label ${del?.name ?? ""}?`}
-        description={del && (usage[del.id] ?? 0) > 0 ? `Label se odebere z ${usage[del.id]} dealů.` : "Label není nikde použitý."}
+        description={del && (usage[del.id] ?? 0) > 0 ? `Štítek se odebere z ${usage[del.id]} záznamů (dealy, osoby, firmy).` : "Štítek není nikde použitý."}
         onConfirm={async () => { if (del) await remove(del); }} />
     </div>
   );

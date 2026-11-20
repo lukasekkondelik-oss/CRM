@@ -57,9 +57,10 @@ export const dealStatus = z.object({
   delivery_status: deliveryStatus.optional(), delivery_ends_on: isoDate.nullable().optional(),
 }).refine((v) => v.status !== "lost" || !!v.lost_reason?.trim(), { message: "U prohry je povinný lost_reason.", path: ["lost_reason"] });
 export const dealLabels = z.object({ label_ids: z.array(id).max(50) });
+export const contactLabels = dealLabels;
 
 // ---- osoby a firmy
-export const personListQuery = z.object({ q: text(100).optional(), organization_id: id.optional(), owner_id: z.union([id, z.literal("me")]).optional(), limit, offset });
+export const personListQuery = z.object({ q: text(100).optional(), organization_id: id.optional(), owner_id: z.union([id, z.literal("me")]).optional(), label_id: id.optional(), limit, offset });
 const personFields = {
   first_name: text(100).optional(), last_name: text(100).optional(),
   email: emailField, phone: text(50).nullable().optional(), position: text(100).nullable().optional(), web: text(200).nullable().optional(),
@@ -70,7 +71,7 @@ export const personCreate = z.object({ ...personFields, organization_id: id.null
 export const personUpdate = z.object({ ...personFields, organization_id: id.nullable().optional() })
   .refine((v) => Object.keys(v).length > 0, "Zadej aspoň jedno pole ke změně.");
 
-export const orgListQuery = z.object({ q: text(100).optional(), owner_id: z.union([id, z.literal("me")]).optional(), limit, offset });
+export const orgListQuery = z.object({ q: text(100).optional(), owner_id: z.union([id, z.literal("me")]).optional(), label_id: id.optional(), limit, offset });
 const orgFields = { ico: icoField, web: text(200).nullable().optional(), address: text(300).nullable().optional(), owner_id: id.nullable().optional() };
 export const orgCreate = z.object({ name: text(200).min(1, "Název je povinný"), ...orgFields });
 export const orgUpdate = z.object({ name: text(200).min(1).optional(), ...orgFields }).refine((v) => Object.keys(v).length > 0, "Zadej aspoň jedno pole ke změně.");

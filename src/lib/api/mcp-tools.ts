@@ -3,7 +3,7 @@ import { z } from "zod";
 import type { Ctx } from "./repo-core";
 import { listMembers, listPipelines } from "./repo-core";
 import { completeActivity, createActivity, createNote, listActivities } from "./repo-activities";
-import { createOrg, createPerson, getOrg, getPerson, listOrgs, listPersons } from "./repo-contacts";
+import { createOrg, createPerson, getOrg, getPerson, labelIdByName, listOrgs, listPersons, resolveLabelNames, setOrgLabels, setPersonLabels } from "./repo-contacts";
 import { createDeal, getDeal, listDeals, moveDeal, setDealStatus, updateDeal } from "./repo-deals";
 import { getOverview } from "./repo-overview";
 import { ApiError } from "./errors";
@@ -74,15 +74,23 @@ export const MCP_TOOLS: McpTool[] = [
     schema: z.object({ id, status: z.enum(["won", "lost", "open"]), lost_reason: z.string().optional().describe("Povinné u lost, např. „Cena“"), delivery_status: deliveryStatus.optional().describe("Jen u won: in_progress (výchozí), ongoing (předplatné), done"), delivery_ends_on: isoDate.optional().describe("Jen u ongoing: do kdy předplatné běží") }),
     run: (ctx, a) => { if (a.status === "lost" && !a.lost_reason?.trim()) throw new ApiError(400, "invalid_request", "U prohry zadej lost_reason."); return setDealStatus(ctx, a.id, a as never); } }),
 
-  tool({ name: "search_contacts", description: "Vyhledá osoby a/nebo firmy podle jména, e-mailu, telefonu, IČO nebo webu.",
-    schema: z.object({ q: z.string().min(1), type: z.enum(["person", "organization", "both"]).optional().describe("Výchozí both"), limit }),
+  tool({ name: "search_contacts", description: "Vyhledá osoby a/nebo firmy podle jména, e-mailu, telefonu, IČO nebo webu a/nebo podle štítku. Vrací i jejich štítky.",
+    schema: z.object({ q: z.string().optional(), label: z.string().optional().describe("Název štítku, např. „VIP“"), type: z.enum(["person", "organization", "both"]).optional().describe("Výchozí both"), limit }),
     run: async (ctx, a) => {
+      if (!a.q?.trim() && !a.label?.trim()) throw new ApiError(400, "invalid_request", "Zadej q (hledaný text) nebo label (název štítku).");
       const l = a.limit ?? 10;
+      const label_id = a.label?.trim() ? await labelIdByName(ctx, a.label) : undefined;
       const [persons, orgs] = await Promise.all([
-        a.type === "organization" ? null : listPersons(ctx, { q: a.q, limit: l, offset: 0 }),
-        a.type === "person" ? null : listOrgs(ctx, { q: a.q, limit: l, offset: 0 }),
+        a.type === "organization" ? null : listPersons(ctx, { q: a.q, label_id, limit: l, offset: 0 }),
+        a.type === "person" ? null : listOrgs(ctx, { q: a.q, label_id, limit: l, offset: 0 }),
       ]);
       return { persons: persons?.items ?? [], organizations: orgs?.items ?? [] };
+    } }),
+  tool({ name: "set_contact_labels", description: "Nastaví štítky osoby nebo firmy (nahradí stávající; prázdné pole je odebere). Štítky se zadávají názvem, chybějící se založí. Sdílí se se štítky dealů.", write: true,
+    schema: z.object({ type: z.enum(["person", "organization"]), id, labels: z.array(z.string().min(1)).max(30).describe("Názvy štítků, např. [\"VIP\", \"Doporučení\"]") }),
+    run: async (ctx, a) => {
+      const ids = await resolveLabelNames(ctx, a.labels);
+      return a.type === "person" ? setPersonLabels(ctx, a.id, ids) : setOrgLabels(ctx, a.id, ids);
     } }),
   tool({ name: "get_contact", description: "Detail osoby nebo firmy včetně dealů, aktivit a poznámek.",
     schema: z.object({ type: z.enum(["person", "organization"]), id }),

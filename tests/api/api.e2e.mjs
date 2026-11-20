@@ -20,7 +20,7 @@ const seed = { tables: {
   organizations: [{ id: O2, workspace_id: W2, name: 'Cizí s.r.o.', ico: null, web: null, address: null, owner_id: null, created_at: iso() }],
   activities: [{ id: A2, workspace_id: W2, type: 'call', subject: 'Cizí aktivita', note: null, due_date: '2020-01-01', due_time: null, duration_min: null, done: false, done_at: null, deal_id: D2, person_id: null, organization_id: null, assigned_to: U2, created_at: iso() }],
   labels: [{ id: L1, workspace_id: W1, name: 'Horký', color: '#ef4444' }, { id: L2, workspace_id: W2, name: 'Cizí label', color: '#000000' }],
-  notes: [], deal_labels: [], deal_history: [],
+  notes: [], deal_labels: [], person_labels: [], organization_labels: [], deal_history: [],
 } };
 fs.writeFileSync(S + '/seed.json', JSON.stringify(seed)); const LOG = S + '/api.log'; fs.writeFileSync(LOG, '');
 const fake = spawn('node', [REPO + '/tests/api/fake-postgrest.cjs', S + '/seed.json', LOG, String(FAKE_PORT)], { stdio: 'inherit' }); await new Promise((r) => setTimeout(r, 700));
@@ -120,6 +120,16 @@ try {
   r = await api('PATCH', `/persons/${per.id}`, F, { phone: '+420 777 111 222', position: '', web: 'jannovak.cz' }); ok(r.s === 200 && r.j.data.phone === '+420 777 111 222' && r.j.data.position === null && r.j.data.web === 'jannovak.cz', 'PATCH osoby (prázdný řetězec → null, web)');
   r = await api('GET', `/persons/${per.id}`, F); ok(r.s === 200 && Array.isArray(r.j.data.deals) && Array.isArray(r.j.data.notes), 'detail osoby');
   r = await api('POST', '/organizations', F, { name: 'Gama s.r.o.', ico: '123 456 78', web: 'gama.cz' }); ok(r.s === 201 && r.j.data.ico === '12345678', 'POST /organizations (IČO normalizované)'); const org = r.j.data;
+  // štítky na osobách a firmách (sdílená sada se štítky dealů)
+  r = await api('PUT', `/persons/${per.id}/labels`, F, { label_ids: [L1] }); ok(r.s === 200 && r.j.data.label_ids.length === 1, 'štítky osoby: nastavení');
+  r = await api('PUT', `/persons/${per.id}/labels`, F, { label_ids: [L2] }); ok(r.s === 422 && r.j.error.code === 'label_not_found', 'štítek osoby: cizí štítek → 422');
+  r = await api('PUT', `/persons/${PER2}/labels`, F, { label_ids: [L1] }); ok(r.s === 404, 'štítky cizí osoby → 404');
+  r = await api('GET', `/persons/${per.id}`, F); ok(r.j.data.labels.length === 1 && r.j.data.labels[0].name === 'Horký', 'detail osoby ukazuje štítek');
+  r = await api('GET', '/persons?q=Eva', F); ok(r.j.data.items[0].labels?.[0]?.name === 'Horký', 'seznam osob ukazuje štítky');
+  r = await api('PUT', `/organizations/${org.id}/labels`, F, { label_ids: [L1] }); ok(r.s === 200, 'štítky firmy: nastavení');
+  r = await api('GET', `/organizations/${org.id}`, F); ok(r.j.data.labels.length === 1, 'detail firmy ukazuje štítek');
+  r = await api('PUT', `/organizations/${org.id}/labels`, F, { label_ids: [] }); r = await api('GET', `/organizations/${org.id}`, F); ok(r.j.data.labels.length === 0, 'štítky firmy: odebrání');
+  r = await api('PUT', `/organizations/${O2}/labels`, F, { label_ids: [L1] }); ok(r.s === 404, 'štítky cizí firmy → 404');
   r = await api('POST', '/organizations', F, { name: 'Špatné', ico: '123' }); ok(r.s === 400, 'neplatné IČO → 400');
   r = await api('GET', `/organizations/${org.id}`, F); ok(r.s === 200 && Array.isArray(r.j.data.persons), 'detail firmy');
   r = await api('DELETE', `/persons/${per.id}`, F); ok(r.s === 200 && r.j.data.deleted === true, 'DELETE osoby');
@@ -160,7 +170,7 @@ try {
   r = await call('GET', '/api/mcp', F); ok(r.s === 405, 'MCP GET → 405');
   r = await mcp({ jsonrpc: '2.0', id: 1, method: 'initialize', params: { protocolVersion: '2025-03-26', capabilities: {}, clientInfo: { name: 't', version: '1' } } }); ok(r.s === 200 && r.j.result.protocolVersion === '2025-03-26' && r.j.result.serverInfo.name === 'nexdeals' && r.j.result.capabilities.tools && /další krok/.test(r.j.result.instructions), 'MCP initialize');
   r = await mcp({ jsonrpc: '2.0', method: 'notifications/initialized' }); ok(r.s === 202, 'MCP notifikace → 202');
-  r = await mcp({ jsonrpc: '2.0', id: 2, method: 'tools/list' }); const tools = r.j.result.tools; ok(tools.length === 17 && tools.every((t) => t.name && t.description && t.inputSchema.type === 'object'), `MCP tools/list: ${tools.length} nástrojů s JSON schématem`);
+  r = await mcp({ jsonrpc: '2.0', id: 2, method: 'tools/list' }); const tools = r.j.result.tools; ok(tools.length === 18 && tools.every((t) => t.name && t.description && t.inputSchema.type === 'object'), `MCP tools/list: ${tools.length} nástrojů s JSON schématem`);
   ok(!tools.some((t) => /delete|remove|smaz/i.test(t.name)), 'žádný nástroj pro mazání');
   const cd = tools.find((t) => t.name === 'create_deal'); ok(cd.inputSchema.required.includes('title') && cd.inputSchema.properties.organization_name, 'schéma create_deal: povinný title, organization_name');
   const callTool = (name, args, key = F) => mcp({ jsonrpc: '2.0', id: 9, method: 'tools/call', params: { name, arguments: args } }, key);
@@ -172,6 +182,10 @@ try {
   r = await callTool('move_deal', { id: mdeal.id, stage_name: 'Schůzka' }); ok(JSON.parse(r.j.result.content[0].text).stage_name === 'Schůzka', 'tool move_deal');
   r = await callTool('close_deal', { id: mdeal.id, status: 'lost' }); ok(r.j.result.isError === true && /lost_reason/.test(r.j.result.content[0].text), 'tool close_deal bez důvodu → isError');
   r = await callTool('close_deal', { id: mdeal.id, status: 'lost', lost_reason: 'Cena' }); ok(!r.j.result.isError, 'tool close_deal s důvodem');
+  r = await callTool('create_person', { first_name: 'Štítek', last_name: 'Testovací' }); const lper = JSON.parse(r.j.result.content[0].text);
+  r = await callTool('set_contact_labels', { type: 'person', id: lper.id, labels: ['Horký', 'Nový štítek'] }); ok(!r.j.result.isError && JSON.parse(r.j.result.content[0].text).label_ids.length === 2, 'tool set_contact_labels (název existující + vytvoření nového)');
+  r = await callTool('search_contacts', { label: 'Neexistuje' }); ok(r.j.result.isError === true, 'tool search_contacts: neznámý štítek → isError');
+  r = await callTool('search_contacts', {}); ok(r.j.result.isError === true, 'tool search_contacts bez q i label → isError');
   r = await callTool('search_contacts', { q: 'claude' }); ok(JSON.parse(r.j.result.content[0].text).organizations.length === 1, 'tool search_contacts');
   r = await callTool('add_note', { content: 'Poznámka z MCP', deal_id: mdeal.id }); ok(!r.j.result.isError, 'tool add_note');
   r = await callTool('get_deal', { id: D2 }); ok(r.j.result.isError && /not_found/.test(r.j.result.content[0].text), 'tool get_deal cizího dealu → isError (not_found)');

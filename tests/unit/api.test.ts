@@ -59,7 +59,7 @@ test("OpenAPI: kompletní dokument se schématy těl a parametry dotazů", () =>
   const doc = buildOpenApi("https://crm.example") as { openapi: string; servers: { url: string }[]; paths: Record<string, Record<string, any>> };
   assert.equal(doc.openapi, "3.1.0");
   assert.equal(doc.servers[0].url, "https://crm.example/api/v1");
-  assert.equal(ENDPOINTS.length, 30);
+  assert.equal(ENDPOINTS.length, 32);
   const create = doc.paths["/deals"].post.requestBody.content["application/json"].schema;
   assert.ok(create.required.includes("title") && create.properties.value);
   const params = doc.paths["/deals"].get.parameters.map((p: { name: string }) => p.name);

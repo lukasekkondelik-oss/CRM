@@ -27,11 +27,13 @@ export const ENDPOINTS: Endpoint[] = [
   { method: "get", path: "/persons/{id}", summary: "Detail osoby s dealy, aktivitami a poznámkami", scope: "read", tag: "Kontakty" },
   { method: "patch", path: "/persons/{id}", summary: "Upravit osobu", scope: "write", tag: "Kontakty", body: S.personUpdate },
   { method: "delete", path: "/persons/{id}", summary: "Smazat osobu", scope: "write", tag: "Kontakty" },
+  { method: "put", path: "/persons/{id}/labels", summary: "Nahradit štítky osoby (stejná sada štítků jako u dealů)", scope: "write", tag: "Kontakty", body: S.contactLabels },
   { method: "get", path: "/organizations", summary: "Seznam firem", scope: "read", tag: "Kontakty", query: S.orgListQuery },
   { method: "post", path: "/organizations", summary: "Vytvořit firmu", scope: "write", tag: "Kontakty", body: S.orgCreate, created: true },
   { method: "get", path: "/organizations/{id}", summary: "Detail firmy s osobami, dealy a poznámkami", scope: "read", tag: "Kontakty" },
   { method: "patch", path: "/organizations/{id}", summary: "Upravit firmu", scope: "write", tag: "Kontakty", body: S.orgUpdate },
   { method: "delete", path: "/organizations/{id}", summary: "Smazat firmu", scope: "write", tag: "Kontakty" },
+  { method: "put", path: "/organizations/{id}/labels", summary: "Nahradit štítky firmy (stejná sada štítků jako u dealů)", scope: "write", tag: "Kontakty", body: S.contactLabels },
 
   { method: "get", path: "/activities", summary: "Seznam aktivit (dnes, po termínu, týden, filtry)", scope: "read", tag: "Aktivity", query: S.activityListQuery },
   { method: "post", path: "/activities", summary: "Naplánovat aktivitu", scope: "write", tag: "Aktivity", body: S.activityCreate, created: true },

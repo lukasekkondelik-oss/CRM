@@ -26,7 +26,17 @@ export async function exportRows(kind: string, q: string): Promise<{ header: str
   if (!user) return null;
   const members = new Map((await lookup(sb, "profiles", "id, full_name")).map((m) => [m.id, m.full_name]));
 
+  /** Štítky záznamů jako „VIP, Doporučení“ podle id záznamu. */
+  async function labelText(table: "person_labels" | "organization_labels", fk: string) {
+    const names = new Map((await lookup(sb, "labels", "id, name")).map((l) => [l.id, l.name]));
+    const links = await all<Record<string, string>>((f, t) => sb.from(table).select(`${fk}, label_id`).order(fk).order("label_id").range(f, t));
+    const m = new Map<string, string[]>();
+    for (const l of links) { const n = names.get(l.label_id); if (n) m.set(l[fk], [...(m.get(l[fk]) ?? []), n]); }
+    return (id: string) => (m.get(id) ?? []).sort((a, b) => a.localeCompare(b, "cs")).join(", ");
+  }
+
   if (kind === "osoby") {
+    const ptext = await labelText("person_labels", "person_id");
     const orgs = new Map((await lookup(sb, "organizations", "id, name")).map((o) => [o.id, o.name]));
     const rows = await all<Record<string, string | null>>((f, t) => {
       let query = sb.from("persons").select("*");
@@ -34,19 +44,20 @@ export async function exportRows(kind: string, q: string): Promise<{ header: str
       return query.order("last_name").order("id").range(f, t);
     });
     return {
-      header: ["Jméno", "Příjmení", "E-mail", "Telefon", "Pozice", "Web", "Firma", "Vlastník", "Vytvořeno"],
-      rows: rows.map((p) => [p.first_name, p.last_name, p.email, p.phone, p.position, p.web, p.organization_id ? orgs.get(p.organization_id) ?? "" : "", p.owner_id ? members.get(p.owner_id) ?? "" : "", date(p.created_at)]),
+      header: ["Jméno", "Příjmení", "E-mail", "Telefon", "Pozice", "Web", "Štítky", "Firma", "Vlastník", "Vytvořeno"],
+      rows: rows.map((p) => [p.first_name, p.last_name, p.email, p.phone, p.position, p.web, ptext(String(p.id)), p.organization_id ? orgs.get(p.organization_id) ?? "" : "", p.owner_id ? members.get(p.owner_id) ?? "" : "", date(p.created_at)]),
     };
   }
   if (kind === "firmy") {
+    const otext = await labelText("organization_labels", "organization_id");
     const rows = await all<Record<string, string | null>>((f, t) => {
       let query = sb.from("organizations").select("*");
       for (const w of wordFilters(q, ORG_SEARCH_COLUMNS)) query = query.or(w);
       return query.order("name").order("id").range(f, t);
     });
     return {
-      header: ["Název", "IČO", "Web", "Adresa", "Vlastník", "Vytvořeno"],
-      rows: rows.map((o) => [o.name, o.ico, o.web, o.address, o.owner_id ? members.get(o.owner_id) ?? "" : "", date(o.created_at)]),
+      header: ["Název", "IČO", "Web", "Adresa", "Štítky", "Vlastník", "Vytvořeno"],
+      rows: rows.map((o) => [o.name, o.ico, o.web, o.address, otext(String(o.id)), o.owner_id ? members.get(o.owner_id) ?? "" : "", date(o.created_at)]),
     };
   }
   if (kind === "dealy") {

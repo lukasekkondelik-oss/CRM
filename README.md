@@ -88,3 +88,10 @@ Vyhraný deal zůstává aktivní, dokud se neodklikne „dodáno“. Stav dodá
 K dealu lze po celou dobu plánovat aktivity; v Pipeline → Tabulka je filtr „V realizaci / předplatné“.
 Logiku hlídá DB trigger `deals_before_write` (migrace `20261122000100_deal_delivery.sql`, test `supabase/tests/deal_delivery_test.sql`);
 API: `POST /deals/{id}/status` a `PATCH /deals/{id}` přijímají `delivery_status` / `delivery_ends_on`, seznam dealů `status=delivering`.
+
+## Štítky na osobách a firmách
+
+Osoby a firmy mají štítky ze **stejné sady** jako dealy (správa v Nastavení → Štítky; tabulky `person_labels`, `organization_labels`,
+migrace `20261123000000_contact_labels.sql`, test `supabase/tests/contact_labels_test.sql`). V detailu se přidávají/odebírají,
+v seznamech Osoby/Firmy je filtr podle štítku (`?label=`), štítky jsou v exportu CSV. API: `PUT /persons/{id}/labels`,
+`PUT /organizations/{id}/labels`, filtr `label_id` v seznamech; MCP nástroj `set_contact_labels` (podle názvu) a `search_contacts` s `label`.

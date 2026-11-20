@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { ArrowLeft, FileText, Globe, MapPin, Trash2, UserCog, Hash, Users } from "lucide-react";
+import { ArrowLeft, FileText, Globe, MapPin, Tag, Trash2, UserCog, Hash, Users } from "lucide-react";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -17,6 +17,7 @@ import { personName } from "@/lib/deals/helpers";
 import { formatDate } from "@/lib/format";
 import type { loadOrg } from "@/lib/data/contacts";
 import type { Organization } from "@/lib/types";
+import { LabelPicker } from "@/components/labels/label-picker";
 import { ContactFeed } from "./contact-feed";
 import { InlineText, makePatcher, Row } from "./field-row";
 import { LinkedDeals } from "./linked-deals";
@@ -71,6 +72,9 @@ export function OrgDetail({ data, today }: { data: Data; today: string }) {
             </Row>
             <Row icon={MapPin} label="Adresa">
               <InlineText label="Adresa" value={org.address} placeholder="Přidat adresu" onSave={(v) => patch({ address: v })} />
+            </Row>
+            <Row icon={Tag} label="Štítky">
+              <LabelPicker target={{ table: "organization_labels", fk: "organization_id" }} entityId={org.id} labels={data.labels} selected={data.labelIds} />
             </Row>
             <Row icon={UserCog} label="Vlastník">
               <div className="flex items-center gap-2">

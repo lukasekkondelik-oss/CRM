@@ -24,7 +24,7 @@ export async function loadSettings() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return null;
 
-  const [meRes, membersRes, pipelinesRes, stagesRes, dealsRes, labelsRes, dealLabelsRes, invitesRes, apiKeysRes, grantsRes, clientsRes] = await Promise.all([
+  const [meRes, membersRes, pipelinesRes, stagesRes, dealsRes, labelsRes, dealLabelsRes, personLabelsRes, orgLabelsRes, invitesRes, apiKeysRes, grantsRes, clientsRes] = await Promise.all([
     supabase.from("profiles").select("*, workspaces(id, name)").eq("id", user.id).maybeSingle(),
     supabase.from("profiles").select("*").order("full_name"),
     supabase.from("pipelines").select("id, workspace_id, name, position").order("position"),
@@ -32,6 +32,8 @@ export async function loadSettings() {
     supabase.from("deals").select("stage_id").limit(20000),
     supabase.from("labels").select("*").order("name"),
     supabase.from("deal_labels").select("label_id").limit(50000),
+    supabase.from("person_labels").select("label_id").limit(50000),
+    supabase.from("organization_labels").select("label_id").limit(50000),
     supabase.from("invitations").select("*").is("accepted_at", null).order("created_at", { ascending: false }),
     supabase.from("api_keys").select("id, name, key_prefix, scopes, created_at, last_used_at, expires_at, revoked_at").order("created_at", { ascending: false }),
     supabase.from("oauth_tokens").select("id, client_id, scopes, created_at, last_used_at, revoked_at, refresh_expires_at").order("created_at", { ascending: false }),
@@ -45,7 +47,7 @@ export async function loadSettings() {
   const dealsByStage: Record<string, number> = {};
   for (const d of dealsRes.data ?? []) dealsByStage[d.stage_id] = (dealsByStage[d.stage_id] ?? 0) + 1;
   const labelUsage: Record<string, number> = {};
-  for (const l of dealLabelsRes.data ?? []) labelUsage[l.label_id] = (labelUsage[l.label_id] ?? 0) + 1;
+  for (const l of [...(dealLabelsRes.data ?? []), ...(personLabelsRes.data ?? []), ...(orgLabelsRes.data ?? [])]) labelUsage[l.label_id] = (labelUsage[l.label_id] ?? 0) + 1;
 
   return {
     userId: user.id,

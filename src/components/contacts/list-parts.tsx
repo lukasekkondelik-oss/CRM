@@ -7,6 +7,7 @@ export function listHref(base: string, p: ListParams, over: Partial<ListParams>)
   const m = { ...p, ...over };
   const s = new URLSearchParams();
   if (m.q) s.set("q", m.q);
+  if (m.label) s.set("label", m.label);
   s.set("sort", m.sort);
   s.set("dir", m.dir);
   if (m.page > 1) s.set("page", String(m.page));

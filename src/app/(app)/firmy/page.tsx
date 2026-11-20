@@ -10,7 +10,8 @@ import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PageHeader } from "@/components/layout/page-header";
 import { NewOrgButton } from "@/components/contacts/org-form";
-import { SearchBox } from "@/components/contacts/list-toolbar";
+import { LabelFilter, SearchBox } from "@/components/contacts/list-toolbar";
+import { LabelChips } from "@/components/labels/label-picker";
 import { listHref, Pagination, SortTh, Th } from "@/components/contacts/list-parts";
 import { listOrgs, parseListParams } from "@/lib/data/contacts";
 import { formatDate } from "@/lib/format";
@@ -21,7 +22,7 @@ const BASE = "/firmy";
 
 export default async function OrgsPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const p = parseListParams(await searchParams, ["name", "ico", "created_at"], "name");
-  const { rows, total, members, userId } = await listOrgs(p);
+  const { rows, total, members, userId, labels } = await listOrgs(p);
   if (rows.length === 0 && p.page > 1) redirect(listHref(BASE, p, { page: 1 }));
   const memberMap = new Map(members.map((m) => [m.id, m]));
   const newBtn = <NewOrgButton members={members} currentUserId={userId} />;
@@ -30,13 +31,13 @@ export default async function OrgsPage({ searchParams }: { searchParams: Promise
   return (
     <>
       <PageHeader title="Firmy" description="Organizace, jejich kontakty a dealy." actions={<>{total > 0 && exportLink}{newBtn}</>} />
-      {total === 0 && !p.q ? (
+      {total === 0 && !p.q && !p.label ? (
         <EmptyState icon={Building2} title="Zatím tu nejsou žádné firmy" description="Přidej první firmu a navaž na ni osoby a dealy. Import z CSV přijde ve Fázi 6." action={newBtn} />
       ) : (
         <>
-          <div className="mb-4"><SearchBox placeholder="Hledat název, IČO, web…" /></div>
+          <div className="mb-4 flex flex-col gap-2 sm:flex-row"><SearchBox placeholder="Hledat název, IČO, web…" /><LabelFilter labels={labels} /></div>
           {total === 0 ? (
-            <EmptyState icon={Building2} title={`Nic nenalezeno pro „${p.q}“`} description="Zkus jiné slovo nebo hledání zruš." action={<Link href={BASE} className="text-sm font-medium text-primary hover:underline">Zrušit hledání</Link>} />
+            <EmptyState icon={Building2} title={p.q ? `Nic nenalezeno pro „${p.q}“` : "Žádný záznam s tímto štítkem"} description="Zkus jiné slovo nebo štítek, případně filtry zruš." action={<Link href={BASE} className="text-sm font-medium text-primary hover:underline">Zrušit filtry</Link>} />
           ) : (
             <Card className="overflow-x-auto">
               <table className="w-full min-w-[760px] text-sm">
@@ -56,7 +57,7 @@ export default async function OrgsPage({ searchParams }: { searchParams: Promise
                     const owner = r.owner_id ? memberMap.get(r.owner_id) : undefined;
                     return (
                       <tr key={r.id} className="hover:bg-muted/40">
-                        <td className="px-3 py-2.5"><Link href={`/firmy/${r.id}`} className="font-medium hover:text-primary hover:underline">{r.name}</Link></td>
+                        <td className="px-3 py-2.5"><Link href={`/firmy/${r.id}`} className="font-medium hover:text-primary hover:underline">{r.name}</Link><LabelChips labels={labels} ids={r.labelIds} /></td>
                         <td className="px-3 py-2.5 tabular-nums text-muted-foreground">{r.ico ?? "—"}</td>
                         <td className="px-3 py-2.5">{r.web ? <a href={webHref(r.web)} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">{r.web}</a> : "—"}</td>
                         <td className="px-3 py-2.5 text-muted-foreground">{r.personCount}</td>

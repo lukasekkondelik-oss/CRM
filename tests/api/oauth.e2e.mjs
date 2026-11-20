@@ -89,7 +89,7 @@ try {
 
   // ===== POUŽITÍ TOKENU (MCP + REST)
   const mcp = async (token) => { const c = new Client({ name: 'oauth-test', version: '1' }); await c.connect(new StreamableHTTPClientTransport(new URL(BASE + '/api/mcp'), { requestInit: { headers: { Authorization: 'Bearer ' + token } } })); return c; };
-  let client = await mcp(tokens.access_token); const tools = (await client.listTools()).tools; ok(tools.length === 17, 'MCP SDK klient s OAuth tokenem: 17 nástrojů');
+  let client = await mcp(tokens.access_token); const tools = (await client.listTools()).tools; ok(tools.length === 18, 'MCP SDK klient s OAuth tokenem: 18 nástrojů');
   let res = await client.callTool({ name: 'create_deal', arguments: { title: 'Z claude.ai', value: 1000, stage_name: 'Nabídka' } }); ok(!res.isError && JSON.parse(res.content[0].text).stage_name === 'Nabídka', 'OAuth token (read+write): zápis funguje');
   await client.close();
   r = await fetch(BASE + '/api/v1/me', { headers: { Authorization: 'Bearer ' + tokens.access_token } }); const me = await r.json(); ok(r.status === 200 && me.data.user.id === U && me.data.scopes.join() === 'read,write', 'stejný token funguje i v REST API (/me)');
