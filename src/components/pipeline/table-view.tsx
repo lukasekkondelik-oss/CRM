@@ -1,5 +1,6 @@
 "use client";
 
+import { DELIVERY_SHORT, isDelivering, needsNextStep } from "@/lib/deals/delivery";
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { ArrowDown, ArrowUp, Trash2 } from "lucide-react";
@@ -50,6 +51,10 @@ function Th({ k, sort, setSort, children, className }: {
 }
 
 const STATUS_BADGE = { open: null, won: <Badge variant="success">Vyhráno</Badge>, lost: <Badge variant="danger">Prohráno</Badge> };
+const deliveryBadge = (d: DealVM) =>
+  d.status === "won" && d.delivery_status && d.delivery_status !== "done"
+    ? <Badge variant="warning">{DELIVERY_SHORT[d.delivery_status]}</Badge>
+    : d.status === "won" && d.delivery_status === "done" ? <Badge variant="muted">Dodáno</Badge> : null;
 
 export function TableView({ deals, stages, members, persons, orgs, now, today, onBulkStage, onBulkOwner, onBulkDelete }: Props) {
   const [sort, setSort] = useState<Sort>({ key: "created", dir: -1 });
@@ -87,13 +92,14 @@ export function TableView({ deals, stages, members, persons, orgs, now, today, o
 
   function exportCsv() {
     const stat = { open: "Otevřený", won: "Vyhráno", lost: "Prohráno" };
+    const del = { in_progress: "Pracuje se na tom", ongoing: "Běží (předplatné)", done: "Dodáno" };
     const lines = rows.map((d) => {
       const person = d.person_id ? personMap.get(d.person_id) : undefined;
       const orgId = d.organization_id ?? person?.organization_id;
-      return [d.title, d.value, stat[d.status], stageMap.get(d.stage_id)?.name, orgId ? orgMap.get(orgId)?.name : "", person ? personName(person) : "",
+      return [d.title, d.value, stat[d.status], d.delivery_status ? del[d.delivery_status] : "", stageMap.get(d.stage_id)?.name, orgId ? orgMap.get(orgId)?.name : "", person ? personName(person) : "",
         d.owner_id ? memberMap.get(d.owner_id)?.full_name : "", d.expected_close_date, d.lost_reason];
     });
-    const blob = new Blob([toCsv([["Název", "Hodnota", "Stav", "Fáze", "Firma", "Osoba", "Vlastník", "Očekávané uzavření", "Důvod prohry"], ...lines])], { type: "text/csv;charset=utf-8" });
+    const blob = new Blob([toCsv([["Název", "Hodnota", "Stav", "Dodání", "Fáze", "Firma", "Osoba", "Vlastník", "Očekávané uzavření", "Důvod prohry"], ...lines])], { type: "text/csv;charset=utf-8" });
     const a = Object.assign(document.createElement("a"), { href: URL.createObjectURL(blob), download: "nexdeals-dealy-tabulka.csv" });
     a.click();
     URL.revokeObjectURL(a.href);
@@ -150,6 +156,7 @@ export function TableView({ deals, stages, members, persons, orgs, now, today, o
                     <Link href={`/dealy/${d.id}`} className="font-medium hover:text-primary hover:underline">{d.title}</Link>
                     <span className="ml-2 inline-flex gap-1 align-middle">
                       {STATUS_BADGE[d.status]}
+                      {deliveryBadge(d)}
                       {rotting && <Badge variant="danger">Hnije</Badge>}
                     </span>
                   </td>
@@ -157,7 +164,7 @@ export function TableView({ deals, stages, members, persons, orgs, now, today, o
                   <td className="px-3 py-2.5 text-muted-foreground">{stageMap.get(d.stage_id)?.name}</td>
                   <td className="px-3 py-2.5 text-muted-foreground">{[orgId ? orgMap.get(orgId)?.name : null, person ? personName(person) : null].filter(Boolean).join(" · ") || "—"}</td>
                   <td className="px-3 py-2.5">{owner ? <span className="flex items-center gap-2"><Avatar name={owner.full_name} src={owner.avatar_url} className="size-6 text-[10px]" /><span className="hidden xl:inline">{owner.full_name}</span></span> : "—"}</td>
-                  <td className="px-3 py-2.5">{d.status === "open" ? <NextStepIcon state={nextState(d, today)} due={d.nextDue} /> : "—"}</td>
+                  <td className="px-3 py-2.5">{needsNextStep(d) || (isDelivering(d) && d.openActivities > 0) ? <NextStepIcon state={nextState(d, today)} due={d.nextDue} /> : "—"}</td>
                   <td className="px-3 py-2.5 text-muted-foreground">{d.expected_close_date ? formatDate(d.expected_close_date) : "—"}</td>
                 </tr>
               );

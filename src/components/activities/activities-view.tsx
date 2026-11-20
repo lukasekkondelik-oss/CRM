@@ -17,6 +17,7 @@ import type { DealLite } from "@/lib/data/activities";
 import { ACTIVITY_TYPES, personName, type Member, type PersonLite } from "@/lib/deals/helpers";
 import type { Activity, ActivityType } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { needsNextStep } from "@/lib/deals/delivery";
 import { ActivityDialog, TYPE_ICON, type DealRef, type DialogMode } from "./activity-dialog";
 import { ActivityCalendar, type CalMode } from "./calendar";
 
@@ -95,7 +96,7 @@ export function ActivitiesView({ initial, deals: initialDeals, persons, members,
     router.refresh(); // obnoví odznak v navigaci
     if (!isDone) return;
     const deal = a.deal_id ? dealMap.get(a.deal_id) : undefined;
-    if (deal && deal.status !== "open") return; // uzavřený deal další krok nepotřebuje
+    if (deal && !needsNextStep(deal)) return; // uzavřený deal (a běžící předplatné) další krok nepotřebuje
     setDialog({
       mode: "next", defaultType: a.type,
       deal: deal ? { id: deal.id, title: deal.title, person_id: deal.person_id, organization_id: deal.organization_id } : null,

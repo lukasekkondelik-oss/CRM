@@ -1,5 +1,6 @@
 "use client";
 
+import { needsNextStep } from "@/lib/deals/delivery";
 import { useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -18,6 +19,7 @@ import type { Activity, ActivityType, Deal, DealHistory, Note } from "@/lib/type
 import { cn } from "@/lib/utils";
 
 const TYPE_ICON: Record<ActivityType, typeof Phone> = { call: Phone, meeting: Users, task: ListChecks, email: Mail, deadline: Flag };
+const DELIVERY_HIST = { in_progress: "Pracuje se na tom", ongoing: "Běží (předplatné)", done: "Dodáno" } as const;
 const STATUS_LABEL = { open: "Otevřený", won: "Vyhráno", lost: "Prohráno" } as const;
 
 function historyText(h: DealHistory): string {
@@ -28,6 +30,7 @@ function historyText(h: DealHistory): string {
     case "value": return `Hodnota: ${formatCZK(h.old_value)} → ${formatCZK(h.new_value)}`;
     case "owner_id": return `Vlastník: ${h.old_value ?? "nikdo"} → ${h.new_value ?? "nikdo"}`;
     case "status": return `Stav: ${STATUS_LABEL[h.old_value as keyof typeof STATUS_LABEL] ?? nz(h.old_value)} → ${STATUS_LABEL[h.new_value as keyof typeof STATUS_LABEL] ?? nz(h.new_value)}`;
+    case "delivery_status": return `Dodání: ${DELIVERY_HIST[h.old_value as keyof typeof DELIVERY_HIST] ?? nz(h.old_value)} → ${DELIVERY_HIST[h.new_value as keyof typeof DELIVERY_HIST] ?? nz(h.new_value)}`;
     case "lost_reason": return `Důvod prohry: ${nz(h.new_value)}`;
     default: return `${h.field}: ${nz(h.old_value)} → ${nz(h.new_value)}`;
   }
@@ -74,8 +77,8 @@ export function DealActivity({ deal, activities, setActivities, notes, setNotes,
       return;
     }
     router.refresh(); // obnoví odznak v navigaci
-    // jádro workflow: po dokončení aktivity nabídnout další krok (u uzavřeného dealu ne)
-    if (next && deal.status === "open") setDialog({ mode: "next" });
+    // jádro workflow: po dokončení aktivity nabídnout další krok (u prohraného, dodaného a běžícího předplatného ne)
+    if (next && needsNextStep(deal)) setDialog({ mode: "next" });
   }
 
   const timeline = useMemo(() => {
@@ -98,8 +101,11 @@ export function DealActivity({ deal, activities, setActivities, notes, setNotes,
         <CardHeader className="pb-3"><CardTitle className="flex items-center gap-2"><Calendar className="size-4" /> Plánováno <Badge variant="muted">{planned.length}</Badge></CardTitle></CardHeader>
         <CardContent>
           {planned.length === 0 ? (
-            <p className={cn("rounded-lg px-3 py-3 text-sm", deal.status === "open" ? "bg-warning-soft text-warning" : "bg-muted text-muted-foreground")}>
-              {deal.status === "open" ? "Bez dalšího kroku – naplánuj další aktivitu níže." : "Žádné naplánované aktivity."}
+            <p className={cn("rounded-lg px-3 py-3 text-sm", needsNextStep(deal) ? "bg-warning-soft text-warning" : "bg-muted text-muted-foreground")}>
+              {deal.status === "open" ? "Bez dalšího kroku – naplánuj další aktivitu níže."
+                : deal.status === "won" && deal.delivery_status === "in_progress" ? "Dodání bez dalšího kroku – naplánuj, co je potřeba udělat, nebo deal označ jako dodaný."
+                : deal.status === "won" && deal.delivery_status === "ongoing" ? "Předplatné běží. Úkoly (kontroly, reporty, prodloužení) můžeš plánovat níže kdykoli."
+                : "Žádné naplánované aktivity."}
             </p>
           ) : (
             <ul className="divide-y">

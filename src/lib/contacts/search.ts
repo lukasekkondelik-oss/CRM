@@ -33,7 +33,7 @@ export async function searchOrgs(q: string): Promise<ComboOption[]> {
 export async function searchDeals(q: string): Promise<ComboOption[]> {
   let query = createClient().from("deals").select("id, title, person_id, organization_id, status");
   for (const f of wordFilters(q, ["title"])) query = query.or(f);
-  const { data } = await query.eq("status", "open").order("created_at", { ascending: false }).limit(20);
+  const { data } = await query.or("status.eq.open,and(status.eq.won,delivery_status.in.(in_progress,ongoing))").order("created_at", { ascending: false }).limit(20);
   return ((data ?? []) as { id: string; title: string }[]).map((d) => ({ id: d.id, label: d.title, data: d }));
 }
 

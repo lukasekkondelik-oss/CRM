@@ -25,7 +25,8 @@ const CORS = { 'access-control-allow-origin': '*', 'access-control-allow-headers
 const send = (res, code, body, h = {}) => { res.writeHead(code, { 'content-type': 'application/json', ...CORS, ...h }); res.end(body === undefined ? undefined : JSON.stringify(body)); };
 function applyTriggers(table, row, old) {
   if (table === 'deals') { const now = new Date().toISOString(); row.updated_at = now;
-    if (old && row.status !== old.status) { if (row.status === 'won') { row.won_at = now; row.lost_at = null; row.lost_reason = null; } else if (row.status === 'lost') { row.lost_at = now; row.won_at = null; } else { row.won_at = null; row.lost_at = null; row.lost_reason = null; } } }
+    if (old && row.status !== old.status) { if (row.status === 'won') { row.won_at = now; row.lost_at = null; row.lost_reason = null; row.delivery_status = row.delivery_status || 'in_progress'; } else if (row.status === 'lost') { row.lost_at = now; row.won_at = null; row.delivery_status = null; } else { row.won_at = null; row.lost_at = null; row.lost_reason = null; row.delivery_status = null; } }
+    if (row.status !== 'won') row.delivery_status = null; if (row.delivery_status !== 'ongoing') row.delivery_ends_on = null; if (row.delivery_status === 'done') row.delivered_at = row.delivered_at || now; else row.delivered_at = null; }
   if (table === 'activities') { if (row.done) row.done_at = row.done_at || new Date().toISOString(); else row.done_at = null; }
 }
 const defaults = { deals: { currency: 'CZK', status: 'open', value: 0, stage_changed_at: () => new Date().toISOString(), created_at: () => new Date().toISOString(), updated_at: () => new Date().toISOString(), won_at: null, lost_at: null, lost_reason: null },

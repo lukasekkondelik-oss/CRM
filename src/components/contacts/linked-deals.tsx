@@ -1,5 +1,7 @@
 "use client";
 
+import { cn } from "@/lib/utils";
+import { DELIVERY_SHORT, isDelivering } from "@/lib/deals/delivery";
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -30,7 +32,8 @@ export function LinkedDeals({ deals, stages, pipelines, userId, link }: Props) {
   const [open, setOpen] = useState(false);
   const stageName = new Map(stages.map((s) => [s.id, s.name]));
   const opened = deals.filter((d) => d.status === "open");
-  const closed = deals.filter((d) => d.status !== "open");
+  const delivering = deals.filter(isDelivering);
+  const closed = deals.filter((d) => d.status !== "open" && !isDelivering(d));
   const sum = opened.reduce((s, d) => s + d.value, 0);
 
   const Item = ({ d }: { d: Deal }) => (
@@ -44,6 +47,7 @@ export function LinkedDeals({ deals, stages, pipelines, userId, link }: Props) {
         </span>
         <span className="flex items-center gap-2 whitespace-nowrap">
           {d.status === "won" && <Badge variant="success">Vyhráno</Badge>}
+          {isDelivering(d) && d.delivery_status && <Badge variant="warning">{DELIVERY_SHORT[d.delivery_status]}</Badge>}
           {d.status === "lost" && <Badge variant="danger">Prohráno</Badge>}
           <span className="text-sm font-semibold tabular-nums">{formatCZK(d.value)}</span>
         </span>
@@ -66,6 +70,12 @@ export function LinkedDeals({ deals, stages, pipelines, userId, link }: Props) {
               <>
                 <p className="mb-1 flex justify-between px-2 text-xs font-medium uppercase tracking-wide text-muted-foreground"><span>Otevřené ({opened.length})</span><span>{formatCZK(sum)}</span></p>
                 <ul>{opened.map((d) => <Item key={d.id} d={d} />)}</ul>
+              </>
+            )}
+            {delivering.length > 0 && (
+              <>
+                <p className={cn("mb-1 px-2 text-xs font-medium uppercase tracking-wide text-muted-foreground", opened.length > 0 && "mt-4")}>V realizaci ({delivering.length})</p>
+                <ul>{delivering.map((d) => <Item key={d.id} d={d} />)}</ul>
               </>
             )}
             {closed.length > 0 && (

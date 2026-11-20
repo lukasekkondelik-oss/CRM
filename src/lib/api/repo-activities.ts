@@ -66,9 +66,9 @@ export async function completeActivity(ctx: Ctx, id: string, input: z.infer<type
   }
   let warning: string | undefined;
   if (!next && done.deal_id) {
-    const deal = must(await ctx.db.from("deals").select("status").eq("workspace_id", ctx.workspaceId).eq("id", done.deal_id).maybeSingle()) as { status: string } | null;
+    const deal = must(await ctx.db.from("deals").select("status, delivery_status").eq("workspace_id", ctx.workspaceId).eq("id", done.deal_id).maybeSingle()) as { status: string; delivery_status: string | null } | null;
     const left = must(await ctx.db.from("activities").select("id").eq("workspace_id", ctx.workspaceId).eq("deal_id", done.deal_id).eq("done", false).limit(1)) as Row[];
-    if (deal?.status === "open" && left.length === 0) warning = "Deal teď nemá žádný naplánovaný další krok. Zvaž přidání další aktivity (pole next).";
+    if (deal && (deal.status === "open" || (deal.status === "won" && deal.delivery_status === "in_progress")) && left.length === 0) warning = "Deal teď nemá žádný naplánovaný další krok. Zvaž přidání další aktivity (pole next).";
   }
   return { completed: done, next_activity: next, ...(warning ? { warning } : {}) };
 }

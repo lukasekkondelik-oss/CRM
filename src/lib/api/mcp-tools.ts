@@ -7,7 +7,7 @@ import { createOrg, createPerson, getOrg, getPerson, listOrgs, listPersons } fro
 import { createDeal, getDeal, listDeals, moveDeal, setDealStatus, updateDeal } from "./repo-deals";
 import { getOverview } from "./repo-overview";
 import { ApiError } from "./errors";
-import { activityType, dealListQuery, id, isoDate, isoTime, orgCreate, personCreate } from "./schemas";
+import { activityType, dealListQuery, deliveryStatus, id, isoDate, isoTime, orgCreate, personCreate } from "./schemas";
 import { nameKey } from "@/lib/import";
 
 export interface McpTool {
@@ -34,7 +34,7 @@ async function stageIdByName(ctx: Ctx, name: string) {
 
 export const MCP_INSTRUCTIONS =
   "nexdeals je CRM pro vedení prodejní pipeline (dealy, osoby, firmy, aktivity, poznámky). Částky jsou v CZK, data ve formátu YYYY-MM-DD. " +
-  "Na začátku použij get_overview. Každý otevřený deal má mít naplánovaný další krok: po dokončení aktivity (complete_activity) rovnou naplánuj další (next_subject). " +
+  "Na začátku použij get_overview. Každý otevřený deal i vyhraný deal ve stavu dodání (delivery_status in_progress) má mít naplánovaný další krok; u předplatného (ongoing) se úkoly plánují průběžně: po dokončení aktivity (complete_activity) rovnou naplánuj další (next_subject). " +
   "Při vytváření dealu stačí zadat názvy firmy a osoby (organization_name, person_name) – chybějící se vytvoří. Nástroje pro mazání záměrně neexistují.";
 
 export const MCP_TOOLS: McpTool[] = [
@@ -48,7 +48,7 @@ export const MCP_TOOLS: McpTool[] = [
   tool({ name: "search_deals", description: "Vyhledá dealy. Vrací název, hodnotu, fázi, firmu, osobu, vlastníka, další krok a příznak hnití.",
     schema: z.object({
       q: z.string().optional().describe("Hledaný text v názvu dealu"),
-      status: z.enum(["open", "won", "lost", "all"]).optional().describe("Výchozí open"),
+      status: z.enum(["open", "won", "lost", "delivering", "all"]).optional().describe("Výchozí open. delivering = vyhrané dealy, které se ještě dodávají / běží jako předplatné"),
       stage_name: z.string().optional().describe("Omezit na fázi podle názvu"),
       mine: z.boolean().optional().describe("Jen moje dealy"),
       limit,
@@ -64,14 +64,14 @@ export const MCP_TOOLS: McpTool[] = [
       expected_close_date: isoDate.optional(),
     }),
     run: (ctx, a) => createDeal(ctx, a) }),
-  tool({ name: "update_deal", description: "Změní název, hodnotu, termín uzavření nebo vlastníka dealu. Fázi měň přes move_deal, výhru/prohru přes close_deal.", write: true,
-    schema: z.object({ id, title: z.string().min(1).optional(), value: z.number().min(0).optional(), expected_close_date: isoDate.nullable().optional(), owner_id: id.nullable().optional() }),
+  tool({ name: "update_deal", description: "Změní název, hodnotu, termín uzavření, vlastníka nebo stav dodání vyhraného dealu (delivery_status: in_progress = pracuje se na tom, ongoing = běží předplatné, done = dodáno; delivery_ends_on = do kdy předplatné běží). Fázi měň přes move_deal, výhru/prohru přes close_deal.", write: true,
+    schema: z.object({ id, title: z.string().min(1).optional(), value: z.number().min(0).optional(), expected_close_date: isoDate.nullable().optional(), owner_id: id.nullable().optional(), delivery_status: deliveryStatus.optional(), delivery_ends_on: isoDate.nullable().optional() }),
     run: (ctx, { id: dealId, ...patch }) => updateDeal(ctx, dealId, patch as never) }),
   tool({ name: "move_deal", description: "Přesune otevřený deal do jiné fáze (podle názvu fáze).", write: true,
     schema: z.object({ id, stage_name: z.string().min(1), pipeline_name: z.string().optional() }),
     run: (ctx, a) => moveDeal(ctx, a.id, { stage_name: a.stage_name, pipeline_name: a.pipeline_name }) }),
-  tool({ name: "close_deal", description: "Označí deal jako vyhraný (won), prohraný (lost, povinný lost_reason) nebo ho znovu otevře (open).", write: true,
-    schema: z.object({ id, status: z.enum(["won", "lost", "open"]), lost_reason: z.string().optional().describe("Povinné u lost, např. „Cena“") }),
+  tool({ name: "close_deal", description: "Označí deal jako vyhraný (won), prohraný (lost, povinný lost_reason) nebo ho znovu otevře (open). Vyhraný deal zůstává aktivní ve stavu dodání (delivery_status, výchozí in_progress); u předplatného zadej delivery_status ongoing a delivery_ends_on.", write: true,
+    schema: z.object({ id, status: z.enum(["won", "lost", "open"]), lost_reason: z.string().optional().describe("Povinné u lost, např. „Cena“"), delivery_status: deliveryStatus.optional().describe("Jen u won: in_progress (výchozí), ongoing (předplatné), done"), delivery_ends_on: isoDate.optional().describe("Jen u ongoing: do kdy předplatné běží") }),
     run: (ctx, a) => { if (a.status === "lost" && !a.lost_reason?.trim()) throw new ApiError(400, "invalid_request", "U prohry zadej lost_reason."); return setDealStatus(ctx, a.id, a as never); } }),
 
   tool({ name: "search_contacts", description: "Vyhledá osoby a/nebo firmy podle jména, e-mailu, telefonu, IČO nebo webu.",

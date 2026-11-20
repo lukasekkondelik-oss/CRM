@@ -58,10 +58,11 @@ export async function exportRows(kind: string, q: string): Promise<{ header: str
     const stageName = new Map(stages.map((s) => [s.id, s.name]));
     const pipeName = new Map(pipelines.map((p) => [p.id, p.name]));
     const status = { open: "Otevřený", won: "Vyhráno", lost: "Prohráno" } as Record<string, string>;
+    const delivery = { in_progress: "Pracuje se na tom", ongoing: "Běží (předplatné)", done: "Dodáno" } as Record<string, string>;
     const rows = await all<Record<string, string | number | null>>((f, t) => sb.from("deals").select("*").order("created_at", { ascending: false }).order("id").range(f, t));
     return {
-      header: ["Název", "Hodnota", "Měna", "Stav", "Pipeline", "Fáze", "Firma", "Osoba", "Vlastník", "Očekávané uzavření", "Důvod prohry", "Vytvořeno"],
-      rows: rows.map((d) => [d.title, Number(d.value), d.currency, status[String(d.status)] ?? d.status, pipeName.get(String(d.pipeline_id)) ?? "", stageName.get(String(d.stage_id)) ?? "",
+      header: ["Název", "Hodnota", "Měna", "Stav", "Dodání", "Pipeline", "Fáze", "Firma", "Osoba", "Vlastník", "Očekávané uzavření", "Důvod prohry", "Vytvořeno"],
+      rows: rows.map((d) => [d.title, Number(d.value), d.currency, status[String(d.status)] ?? d.status, delivery[String(d.delivery_status)] ?? "", pipeName.get(String(d.pipeline_id)) ?? "", stageName.get(String(d.stage_id)) ?? "",
         d.organization_id ? orgName.get(String(d.organization_id)) ?? "" : "", d.person_id ? personName.get(String(d.person_id)) ?? "" : "",
         d.owner_id ? members.get(String(d.owner_id)) ?? "" : "", d.expected_close_date, d.lost_reason, date(String(d.created_at))]),
     };

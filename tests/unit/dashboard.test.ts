@@ -43,6 +43,10 @@ assert.equal(periodStart("3m", "2026-01-15"), "2025-11-01"); assert.equal(period
 // rotting + bez kroku
 const r = rottingDeals(deals, stages, "", now); assert.equal(r.length, 1); assert.equal(r[0].deal.value, 700); assert.ok(r[0].days >= 48);
 assert.equal(dealsWithoutNextStep(deals, "").length, 1); assert.equal(dealsWithoutNextStep(deals, "")[0].value, 9000);
+// vyhraný deal v realizaci bez kroku se hlídá, předplatné a dodaný ne
+const won = (id: string, delivery: string | null): DDeal => ({ id, title: id, value: 1, status: "won", stage_id: "s1", pipeline_id: "p", owner_id: null, won_at: "2026-11-01T00:00:00Z", lost_at: null, stage_changed_at: "2026-11-01T00:00:00Z", openActivities: 0, delivery_status: delivery });
+const withDelivery = [...deals, won("w1", "in_progress"), won("w2", "ongoing"), won("w3", "done")];
+assert.deepEqual(dealsWithoutNextStep(withDelivery, "").map((d) => d.id).filter((x) => x.startsWith("w")), ["w1"]);
 
 
 });

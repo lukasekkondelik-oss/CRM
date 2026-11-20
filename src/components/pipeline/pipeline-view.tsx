@@ -1,5 +1,6 @@
 "use client";
 
+import { isDelivering, needsNextStep } from "@/lib/deals/delivery";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -34,7 +35,7 @@ interface Props {
   today: string;
 }
 
-type StatusFilter = "open" | "won" | "lost" | "all";
+type StatusFilter = "open" | "delivering" | "won" | "lost" | "all";
 
 export function PipelineView({ pipelines, pipeline, stages, initialDeals, members, labels, initialPersons, initialOrgs, currentUserId, now, today }: Props) {
   const router = useRouter();
@@ -59,14 +60,14 @@ export function PipelineView({ pipelines, pipeline, stages, initialDeals, member
       if (filters.mine && d.owner_id !== currentUserId) return false;
       if (filters.owner && d.owner_id !== filters.owner) return false;
       if (filters.label && !d.labelIds.includes(filters.label)) return false;
-      if (filters.noNext && !(d.status === "open" && nextState(d, today) === "none")) return false;
+      if (filters.noNext && !(needsNextStep(d) && nextState(d, today) === "none")) return false;
       if (filters.rotting && !isRotting(d, stageMap.get(d.stage_id), now)) return false;
       return true;
     });
   }, [deals, filters, currentUserId, today, now, stageMap]);
 
   const openDeals = useMemo(() => filtered.filter((d) => d.status === "open"), [filtered]);
-  const tableDeals = useMemo(() => (status === "all" ? filtered : filtered.filter((d) => d.status === status)), [filtered, status]);
+  const tableDeals = useMemo(() => (status === "all" ? filtered : status === "delivering" ? filtered.filter(isDelivering) : filtered.filter((d) => d.status === status)), [filtered, status]);
 
   /** Optimistická změna + uložení; při chybě vrátí původní stav a ukáže toast. */
   const patchDeals = useCallback(async (ids: string[], patch: Partial<Deal>): Promise<boolean> => {
@@ -83,7 +84,7 @@ export function PipelineView({ pipelines, pipeline, stages, initialDeals, member
   }, []);
 
   const reopen = useCallback((ids: string[]) =>
-    patchDeals(ids, { status: "open", won_at: null, lost_at: null, lost_reason: null }), [patchDeals]);
+    patchDeals(ids, { status: "open", won_at: null, lost_at: null, lost_reason: null, delivery_status: null, delivery_ends_on: null, delivered_at: null }), [patchDeals]);
 
   const handleMove = (id: string, stageId: string, position: number) => {
     const deal = dealsRef.current.find((d) => d.id === id);
@@ -92,15 +93,15 @@ export function PipelineView({ pipelines, pipeline, stages, initialDeals, member
   };
 
   const handleWon = async (id: string) => {
-    const ok = await patchDeals([id], { status: "won", won_at: new Date().toISOString(), lost_at: null, lost_reason: null });
-    if (ok) toast.success("Deal označen jako vyhraný", { action: { label: "Vrátit", onClick: () => reopen([id]) } });
+    const ok = await patchDeals([id], { status: "won", won_at: new Date().toISOString(), lost_at: null, lost_reason: null, delivery_status: "in_progress", delivery_ends_on: null, delivered_at: null });
+    if (ok) toast.success("Deal vyhrán – pokračuje jako „V realizaci“", { action: { label: "Vrátit", onClick: () => reopen([id]) } });
   };
 
   const handleLost = async (reason: string) => {
     if (!lostId) return;
     const id = lostId;
     setLostId(null);
-    const ok = await patchDeals([id], { status: "lost", lost_at: new Date().toISOString(), won_at: null, lost_reason: reason });
+    const ok = await patchDeals([id], { status: "lost", lost_at: new Date().toISOString(), won_at: null, lost_reason: reason, delivery_status: null, delivery_ends_on: null, delivered_at: null });
     if (ok) toast("Deal označen jako prohraný", { action: { label: "Vrátit", onClick: () => reopen([id]) } });
   };
 
@@ -189,9 +190,10 @@ export function PipelineView({ pipelines, pipeline, stages, initialDeals, member
         labels={labels}
         extra={
           view === "table" && (
-            <Select value={status} onChange={(e) => setStatus(e.target.value as StatusFilter)} className="h-9 w-36" aria-label="Stav">
+            <Select value={status} onChange={(e) => setStatus(e.target.value as StatusFilter)} className="h-9 w-48" aria-label="Stav">
               <option value="open">Otevřené</option>
-              <option value="won">Vyhrané</option>
+              <option value="delivering">V realizaci / předplatné</option>
+              <option value="won">Vyhrané (vše)</option>
               <option value="lost">Prohrané</option>
               <option value="all">Všechny</option>
             </Select>

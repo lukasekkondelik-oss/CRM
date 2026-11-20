@@ -6,7 +6,7 @@ import { must, TODAY, type Ctx } from "./repo-core";
 export async function getOverview(ctx: Ctx, ownerFilter?: string) {
   const today = TODAY();
   const [dealsRes, pipes, acts] = await Promise.all([
-    ctx.db.from("deals").select("id, title, value, status, stage_id, pipeline_id, owner_id, won_at, lost_at, stage_changed_at").eq("workspace_id", ctx.workspaceId).limit(5000),
+    ctx.db.from("deals").select("id, title, value, status, stage_id, pipeline_id, owner_id, won_at, lost_at, stage_changed_at, delivery_status").eq("workspace_id", ctx.workspaceId).limit(5000),
     ctx.db.from("pipelines").select("id, name, position").eq("workspace_id", ctx.workspaceId).order("position"),
     ctx.db.from("activities").select("id, deal_id, subject, type, due_date, due_time, assigned_to").eq("workspace_id", ctx.workspaceId).eq("done", false).limit(20000),
   ]);
@@ -29,7 +29,7 @@ export async function getOverview(ctx: Ctx, ownerFilter?: string) {
 
   return {
     date: today,
-    kpis: { open_deals: kpis.openCount, open_value: kpis.openValue, weighted_value: Math.round(kpis.weighted), won_this_month: kpis.wonCount, won_value_this_month: kpis.wonValue, lost_this_month: kpis.lostCount, win_rate_percent: kpis.winRate },
+    kpis: { open_deals: kpis.openCount, open_value: kpis.openValue, weighted_value: Math.round(kpis.weighted), won_this_month: kpis.wonCount, delivering_deals: deals.filter((d) => d.status === "won" && (d.delivery_status === "in_progress" || d.delivery_status === "ongoing")).length, won_value_this_month: kpis.wonValue, lost_this_month: kpis.lostCount, win_rate_percent: kpis.winRate },
     funnel: pipelines.map((p) => ({ pipeline: p.name, stages: computeFunnel(deals, stages, p.id, owner).map((r) => ({ stage: r.name, deals: r.count, value: r.value, probability: r.probability })) })),
     activities_due: {
       overdue: mine.filter((a) => a.due_date! < today).length,

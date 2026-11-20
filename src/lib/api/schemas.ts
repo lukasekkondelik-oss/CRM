@@ -17,7 +17,7 @@ export const activityType = z.enum(ACTIVITY_TYPES);
 // ---- dealy
 export const dealListQuery = z.object({
   pipeline_id: id.optional(), stage_id: id.optional(),
-  status: z.enum(["open", "won", "lost", "all"]).default("open"),
+  status: z.enum(["open", "won", "lost", "delivering", "all"]).default("open"),
   owner_id: z.union([id, z.literal("me")]).optional(),
   person_id: id.optional(), organization_id: id.optional(),
   q: text(100).optional(),
@@ -26,6 +26,7 @@ export const dealListQuery = z.object({
   limit, offset,
 });
 
+export const deliveryStatus = z.enum(["in_progress", "ongoing", "done"]);
 const dealRefs = {
   pipeline_id: id.optional(), pipeline_name: text(100).optional(),
   stage_id: id.optional(), stage_name: text(100).optional(),
@@ -46,12 +47,14 @@ export const dealUpdate = z.object({
   currency: z.string().regex(/^[A-Z]{3}$/).optional(),
   person_id: id.nullable().optional(), organization_id: id.nullable().optional(), owner_id: id.nullable().optional(),
   expected_close_date: isoDate.nullable().optional(),
+  delivery_status: deliveryStatus.optional(), delivery_ends_on: isoDate.nullable().optional(),
 }).refine((v) => Object.keys(v).length > 0, "Zadej aspoň jedno pole ke změně.");
 export const dealMove = z.object({ ...dealRefs, position: z.number().optional() })
   .refine((v) => v.stage_id || v.stage_name, "Zadej stage_id nebo stage_name.");
 export const dealStatus = z.object({
   status: z.enum(["open", "won", "lost"]),
   lost_reason: text(500).optional(),
+  delivery_status: deliveryStatus.optional(), delivery_ends_on: isoDate.nullable().optional(),
 }).refine((v) => v.status !== "lost" || !!v.lost_reason?.trim(), { message: "U prohry je povinný lost_reason.", path: ["lost_reason"] });
 export const dealLabels = z.object({ label_ids: z.array(id).max(50) });
 

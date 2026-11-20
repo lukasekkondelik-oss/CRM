@@ -80,3 +80,11 @@ Testy: `npm test` (jednotkové), `npm run test:api` (e2e API a MCP proti falešn
 
 - **Fáze 7** – polish: skeletony všech sekcí, chybové stránky, tmavý toast, hlavičky zabezpečení, ikona, skip-link,
   výkon (líné načtení hledání a grafů, memoizované karty při tahu), kontrola mobilu a tmavého režimu.
+
+## Dodání vyhraných dealů
+
+Vyhraný deal zůstává aktivní, dokud se neodklikne „dodáno“. Stav dodání (`delivery_status`) je `in_progress`
+(Pracuje se na tom – výchozí po výhře), `ongoing` (Běží – předplatné, volitelně `delivery_ends_on`) nebo `done` (Dodáno).
+K dealu lze po celou dobu plánovat aktivity; v Pipeline → Tabulka je filtr „V realizaci / předplatné“.
+Logiku hlídá DB trigger `deals_before_write` (migrace `20261122000100_deal_delivery.sql`, test `supabase/tests/deal_delivery_test.sql`);
+API: `POST /deals/{id}/status` a `PATCH /deals/{id}` přijímají `delivery_status` / `delivery_ends_on`, seznam dealů `status=delivering`.

@@ -12,6 +12,7 @@ export interface DDeal {
   lost_at: string | null;
   stage_changed_at: string;
   openActivities: number;
+  delivery_status?: string | null;
 }
 export interface DStage { id: string; pipeline_id: string; name: string; position: number; probability: number; rotting_days: number | null }
 
@@ -134,4 +135,4 @@ export function rottingDeals(deals: DDeal[], stages: DStage[], owner: string, no
 }
 
 export const dealsWithoutNextStep = (deals: DDeal[], owner: string) =>
-  deals.filter((d) => d.status === "open" && d.openActivities === 0 && byOwner(d, owner)).sort((a, b) => b.value - a.value);
+  deals.filter((d) => (d.status === "open" || (d.status === "won" && d.delivery_status === "in_progress")) && d.openActivities === 0 && byOwner(d, owner)).sort((a, b) => b.value - a.value);

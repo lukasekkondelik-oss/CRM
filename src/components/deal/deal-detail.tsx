@@ -20,7 +20,9 @@ import { daysInStage, isRotting, personName, type Member, type OrgLite, type Per
 import { formatCZK, formatDate } from "@/lib/format";
 import type { Activity, Deal, DealHistory, Label, Note, Pipeline, Stage } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { DELIVERY_LABEL } from "@/lib/deals/delivery";
 import { DealActivity } from "./deal-activity";
+import { DeliveryPanel } from "./delivery-panel";
 
 interface Data {
   userId: string;
@@ -156,6 +158,12 @@ export function DealDetail({ data, now, today }: { data: Data; now: number; toda
           />
           <div className="mt-1 flex flex-wrap items-center gap-2 pl-px">
             {deal.status === "won" && <Badge variant="success">Vyhráno {formatDate(deal.won_at)}</Badge>}
+            {deal.status === "won" && deal.delivery_status && (
+              <Badge variant={deal.delivery_status === "done" ? "muted" : "warning"}>
+                {DELIVERY_LABEL[deal.delivery_status]}{deal.delivery_status === "ongoing" && deal.delivery_ends_on ? ` do ${formatDate(deal.delivery_ends_on)}` : ""}
+                {deal.delivery_status === "done" && deal.delivered_at ? ` ${formatDate(deal.delivered_at)}` : ""}
+              </Badge>
+            )}
             {deal.status === "lost" && <Badge variant="danger">Prohráno {formatDate(deal.lost_at)}{deal.lost_reason ? ` · ${deal.lost_reason}` : ""}</Badge>}
             {open && rotting && <Badge variant="danger">Hnije – {daysInStage(deal, now)} dní ve fázi</Badge>}
             {open && <span className="text-sm text-muted-foreground">{stage?.name} · {formatCZK(deal.value)}</span>}
@@ -164,11 +172,11 @@ export function DealDetail({ data, now, today }: { data: Data; now: number; toda
         <div className="flex flex-wrap items-center gap-2">
           {open ? (
             <>
-              <Button variant="success" onClick={() => status({ status: "won", won_at: new Date().toISOString(), lost_at: null, lost_reason: null })}><Trophy /> Vyhráno</Button>
+              <Button variant="success" onClick={() => status({ status: "won", won_at: new Date().toISOString(), lost_at: null, lost_reason: null, delivery_status: "in_progress", delivery_ends_on: null, delivered_at: null })}><Trophy /> Vyhráno</Button>
               <Button variant="outline" className="text-danger" onClick={() => setLostOpen(true)}><XCircle /> Prohráno</Button>
             </>
           ) : (
-            <Button variant="outline" onClick={() => status({ status: "open", won_at: null, lost_at: null, lost_reason: null })}><RotateCcw /> Znovu otevřít</Button>
+            <Button variant="outline" onClick={() => status({ status: "open", won_at: null, lost_at: null, lost_reason: null, delivery_status: null, delivery_ends_on: null, delivered_at: null })}><RotateCcw /> Znovu otevřít</Button>
           )}
           <Button variant="ghost" size="icon" aria-label="Smazat deal" onClick={() => setDeleteOpen(true)}><Trash2 /></Button>
         </div>
@@ -191,6 +199,11 @@ export function DealDetail({ data, now, today }: { data: Data; now: number; toda
                 <span className="font-medium text-foreground">{stage?.name}</span> · {stage?.probability} % · {daysInStage(deal, now)} dní ve fázi
               </p>
             </div>
+
+            {deal.status === "won" && (
+              <DeliveryPanel deal={deal} plannedCount={activities.filter((a) => !a.done).length}
+                onChange={(p) => patch(p, { history: true })} />
+            )}
 
             <Row icon={Wallet} label="Hodnota">
               <input
@@ -277,7 +290,7 @@ export function DealDetail({ data, now, today }: { data: Data; now: number; toda
       </div>
 
       <LostDialog open={lostOpen} onOpenChange={setLostOpen} dealTitle={deal.title}
-        onConfirm={(reason) => { setLostOpen(false); status({ status: "lost", lost_at: new Date().toISOString(), won_at: null, lost_reason: reason }); }} />
+        onConfirm={(reason) => { setLostOpen(false); status({ status: "lost", lost_at: new Date().toISOString(), won_at: null, lost_reason: reason, delivery_status: null, delivery_ends_on: null, delivered_at: null }); }} />
       <ConfirmDialog open={deleteOpen} onOpenChange={setDeleteOpen} title="Smazat deal?"
         description="Smažou se i jeho aktivity, poznámky a historie. Akci nelze vrátit."
         onConfirm={async () => {

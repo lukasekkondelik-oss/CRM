@@ -2,6 +2,7 @@
 // generovanými: `supabase gen types typescript`.
 export type Role = "admin" | "member";
 export type DealStatus = "open" | "won" | "lost";
+export type DeliveryStatus = "in_progress" | "ongoing" | "done";
 export type ActivityType = "call" | "meeting" | "task" | "email" | "deadline";
 
 export interface Workspace { id: string; name: string; created_at: string }
@@ -28,6 +29,7 @@ export interface Deal {
   value: number; currency: string; person_id: string | null; organization_id: string | null;
   owner_id: string | null; expected_close_date: string | null; status: DealStatus;
   lost_reason: string | null; won_at: string | null; lost_at: string | null;
+  delivery_status: DeliveryStatus | null; delivery_ends_on: string | null; delivered_at: string | null;
   stage_changed_at: string; position: number; created_at: string; updated_at: string;
 }
 export interface Activity {

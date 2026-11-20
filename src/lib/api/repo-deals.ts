@@ -4,7 +4,7 @@ import { ApiError, notFound } from "./errors";
 import { byIds, chunks, emptyToNull, me, must, personName, resolveOrg, resolvePerson, resolveStage, searchWords, listPipelines, type Ctx, type Row } from "./repo-core";
 import type { dealCreate, dealListQuery, dealMove, dealStatus, dealUpdate } from "./schemas";
 
-const COLS = "id, title, value, currency, status, pipeline_id, stage_id, person_id, organization_id, owner_id, expected_close_date, lost_reason, won_at, lost_at, stage_changed_at, position, created_at, updated_at";
+const COLS = "id, title, value, currency, status, pipeline_id, stage_id, person_id, organization_id, owner_id, expected_close_date, lost_reason, won_at, lost_at, delivery_status, delivery_ends_on, delivered_at, stage_changed_at, position, created_at, updated_at";
 
 interface DealRow extends Row {
   id: string; title: string; value: number | string; pipeline_id: string; stage_id: string; status: string; stage_changed_at: string;
@@ -55,7 +55,8 @@ async function decorate(ctx: Ctx, rows: DealRow[]) {
 
 export async function listDeals(ctx: Ctx, q: z.infer<typeof dealListQuery>) {
   let query = ctx.db.from("deals").select(COLS, { count: "exact" }).eq("workspace_id", ctx.workspaceId);
-  if (q.status !== "all") query = query.eq("status", q.status);
+  if (q.status === "delivering") query = query.eq("status", "won").in("delivery_status", ["in_progress", "ongoing"]);
+  else if (q.status !== "all") query = query.eq("status", q.status);
   if (q.pipeline_id) query = query.eq("pipeline_id", q.pipeline_id);
   if (q.stage_id) query = query.eq("stage_id", q.stage_id);
   const owner = me(ctx, q.owner_id);
@@ -112,6 +113,11 @@ export async function createDeal(ctx: Ctx, input: z.infer<typeof dealCreate>) {
 }
 
 export async function updateDeal(ctx: Ctx, id: string, patch: z.infer<typeof dealUpdate>) {
+  if (patch.delivery_status !== undefined || patch.delivery_ends_on !== undefined) {
+    const deal = await loadDeal(ctx, id);
+    if (deal.status !== "won") throw new ApiError(409, "deal_not_won", "Dodání jde nastavit jen u vyhraného dealu.");
+    if (patch.delivery_ends_on && (patch.delivery_status ?? deal.delivery_status) !== "ongoing") throw new ApiError(422, "invalid_request", "delivery_ends_on dává smysl jen u delivery_status = ongoing (předplatné).");
+  }
   const rows = must(await ctx.db.from("deals").update(patch).eq("workspace_id", ctx.workspaceId).eq("id", id).select(COLS)) as unknown as DealRow[];
   if (!rows[0]) throw notFound("Deal");
   return (await decorate(ctx, [rows[0]]))[0];
@@ -132,7 +138,11 @@ export async function moveDeal(ctx: Ctx, id: string, input: z.infer<typeof dealM
 }
 
 export async function setDealStatus(ctx: Ctx, id: string, input: z.infer<typeof dealStatus>) {
-  const patch = input.status === "lost" ? { status: "lost", lost_reason: input.lost_reason } : { status: input.status };
+  if (input.status !== "won" && (input.delivery_status || input.delivery_ends_on)) throw new ApiError(422, "invalid_request", "Dodání (delivery_status) jde zadat jen při status = won.");
+  if (input.delivery_ends_on && input.delivery_status !== "ongoing") throw new ApiError(422, "invalid_request", "delivery_ends_on dává smysl jen u delivery_status = ongoing (předplatné).");
+  const patch = input.status === "lost" ? { status: "lost", lost_reason: input.lost_reason }
+    : input.status === "won" ? { status: "won", ...(input.delivery_status ? { delivery_status: input.delivery_status } : {}), ...(input.delivery_ends_on ? { delivery_ends_on: input.delivery_ends_on } : {}) }
+    : { status: input.status };
   const rows = must(await ctx.db.from("deals").update(patch).eq("workspace_id", ctx.workspaceId).eq("id", id).select(COLS)) as unknown as DealRow[];
   if (!rows[0]) throw notFound("Deal");
   return (await decorate(ctx, [rows[0]]))[0];

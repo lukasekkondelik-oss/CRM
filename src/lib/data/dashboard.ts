@@ -17,7 +17,7 @@ export async function loadDashboard() {
   if (!user) return null;
 
   const [dealsRes, stagesRes, pipelinesRes, membersRes, actsRes] = await Promise.all([
-    supabase.from("deals").select("id, title, value, status, stage_id, pipeline_id, owner_id, won_at, lost_at, stage_changed_at").limit(LIMIT),
+    supabase.from("deals").select("id, title, value, status, stage_id, pipeline_id, owner_id, won_at, lost_at, stage_changed_at, delivery_status").limit(LIMIT),
     supabase.from("stages").select("id, pipeline_id, name, position, probability, rotting_days").order("position"),
     supabase.from("pipelines").select("id, workspace_id, name, position").order("position"),
     supabase.from("profiles").select("id, full_name, avatar_url").order("full_name"),

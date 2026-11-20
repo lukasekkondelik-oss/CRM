@@ -80,7 +80,18 @@ try {
   r = await api('POST', `/deals/${deal.id}/move`, F, { stage_name: 'Lead' }); ok(r.s === 409 && r.j.error.code === 'deal_closed', 'uzavřený deal nejde přesunout → 409');
   r = await api('POST', `/deals/${deal.id}/status`, F, { status: 'open' }); ok(r.s === 200 && r.j.data.status === 'open' && r.j.data.lost_reason === null, 'znovu otevřít');
   r = await api('POST', `/deals/${deal.id}/status`, F, { status: 'won' }); ok(r.s === 200 && r.j.data.status === 'won' && r.j.data.won_at, 'vyhráno');
+  ok(r.j.data.delivery_status === 'in_progress', 'výhra → dodání „pracuje se na tom“');
   r = await api('GET', '/deals?status=won', F); ok(r.j.data.total === 1, 'filtr status=won');
+  r = await api('GET', '/deals?status=delivering', F); ok(r.j.data.total === 1, 'filtr status=delivering (vyhrané v realizaci)');
+  r = await api('PATCH', `/deals/${deal.id}`, F, { delivery_status: 'ongoing', delivery_ends_on: '2027-11-20' }); ok(r.s === 200 && r.j.data.delivery_status === 'ongoing' && r.j.data.delivery_ends_on === '2027-11-20', 'předplatné s datem konce');
+  r = await api('PATCH', `/deals/${deal.id}`, F, { delivery_status: 'in_progress', delivery_ends_on: '2027-11-20' }); ok(r.s === 422, 'datum konce jen u předplatného → 422');
+  r = await api('PATCH', `/deals/${deal.id}`, F, { delivery_status: 'done' }); ok(r.s === 200 && r.j.data.delivery_status === 'done' && r.j.data.delivered_at && r.j.data.delivery_ends_on === null, 'dodáno → delivered_at, konec smazán');
+  r = await api('GET', '/deals?status=delivering', F); ok(r.j.data.total === 0, 'dodaný deal už není v „delivering“');
+  r = await api('PATCH', `/deals/${deal.id}`, F, { delivery_status: 'in_progress' }); ok(r.s === 200 && r.j.data.delivery_status === 'in_progress' && r.j.data.delivered_at === null, 'vrácení do realizace');
+  r = await api('POST', `/deals/${deal2.id}/status`, F, { status: 'won', delivery_status: 'ongoing', delivery_ends_on: '2027-01-31' }); ok(r.s === 200 && r.j.data.delivery_status === 'ongoing', 'výhra rovnou jako předplatné');
+  r = await api('POST', `/deals/${deal2.id}/status`, F, { status: 'open' }); ok(r.s === 200 && r.j.data.delivery_status === null, 'znovu otevřít vynuluje dodání');
+  r = await api('PATCH', `/deals/${deal2.id}`, F, { delivery_status: 'done' }); ok(r.s === 409 && r.j.error.code === 'deal_not_won', 'dodání u otevřeného dealu → 409');
+  r = await api('POST', `/deals/${deal2.id}/status`, F, { status: 'lost', lost_reason: 'x', delivery_status: 'done' }); ok(r.s === 422, 'dodání při prohře → 422');
   r = await api('GET', '/deals', F); ok(r.j.data.total === 2, 'výchozí seznam už neobsahuje vyhraný (status=open)');
   r = await api('PUT', `/deals/${deal2.id}/labels`, F, { label_ids: [L1] }); ok(r.s === 200 && r.j.data.label_ids.length === 1, 'labely dealu: nastavení');
   r = await api('PUT', `/deals/${deal2.id}/labels`, F, { label_ids: [L2] }); ok(r.s === 422 && r.j.error.code === 'label_not_found', 'cizí label → 422');
