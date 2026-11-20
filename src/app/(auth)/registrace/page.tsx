@@ -4,13 +4,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { createClient } from "@/lib/supabase/server";
 import { AuthForm, type Field } from "../auth-form";
 import { register } from "../actions";
+import { sanitizeNext } from "@/lib/oauth/pure";
 
 export const metadata: Metadata = { title: "Registrace" };
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-export default async function RegisterPage({ searchParams }: { searchParams: Promise<{ invite?: string }> }) {
-  const { invite } = await searchParams;
+export default async function RegisterPage({ searchParams }: { searchParams: Promise<{ invite?: string; next?: string }> }) {
+  const { invite, next: nextRaw } = await searchParams;
+  const next = sanitizeNext(nextRaw);
 
   // Pozvánka: ověříme token (veřejná funkce vrací jen e-mail, roli a název workspace)
   let invitation: { email: string; role: string; workspace_name: string } | null = null;
@@ -49,10 +51,10 @@ export default async function RegisterPage({ searchParams }: { searchParams: Pro
           </p>
         )}
         {!invalidInvite && (
-          <AuthForm action={register} submitLabel={invitation ? "Připojit se" : "Vytvořit účet"} fields={fields} hidden={invitation ? { invite_token: invite! } : undefined} />
+          <AuthForm action={register} submitLabel={invitation ? "Připojit se" : "Vytvořit účet"} fields={fields} hidden={{ ...(invitation ? { invite_token: invite! } : {}), ...(next ? { next } : {}) }} />
         )}
         <p className="text-center text-sm text-muted-foreground">
-          Už máš účet? <Link href="/login" className="font-medium text-primary hover:underline">Přihlas se</Link>
+          Už máš účet? <Link href={next ? `/login?next=${encodeURIComponent(next)}` : "/login"} className="font-medium text-primary hover:underline">Přihlas se</Link>
         </p>
       </CardContent>
     </Card>

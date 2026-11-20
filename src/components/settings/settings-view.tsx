@@ -37,7 +37,7 @@ export function SettingsView({ data, initialTab }: { data: Data; initialTab: Tab
       </div>
       {tab === "team" && <TeamSettings isAdmin={data.isAdmin} userId={data.userId} workspace={data.workspace} members={data.members} invitations={data.invitations} invitesAvailable={data.invitesAvailable} />}
       {tab === "pipelines" && <PipelinesSettings isAdmin={data.isAdmin} pipelines={data.pipelines} stages={data.stages} dealsByStage={data.dealsByStage} />}
-      {tab === "api" && <ApiSettings apiKeys={data.apiKeys} apiKeysAvailable={data.apiKeysAvailable} apiConfigured={data.apiConfigured} endpoints={data.endpoints} mcpTools={data.mcpTools} />}
+      {tab === "api" && <ApiSettings apiKeys={data.apiKeys} apiKeysAvailable={data.apiKeysAvailable} apiConfigured={data.apiConfigured} oauthAvailable={data.oauthAvailable} oauthGrants={data.oauthGrants} endpoints={data.endpoints} mcpTools={data.mcpTools} />}
       {tab === "labels" && <LabelsSettings labels={data.labels} usage={data.labelUsage} />}
       {tab === "import" && <ImportExport members={data.members.map((m) => ({ id: m.id, full_name: m.full_name, email: m.email }))} userId={data.userId} pipelines={data.pipelines} stages={data.stages} />}
     </>

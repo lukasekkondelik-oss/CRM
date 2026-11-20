@@ -4,6 +4,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import type { AuthError } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/server";
+import { sanitizeNext } from "@/lib/oauth/pure";
 
 export type AuthState = { error?: string; message?: string } | undefined;
 
@@ -36,7 +37,7 @@ export async function login(_prev: AuthState, formData: FormData): Promise<AuthS
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithPassword({ email, password });
   if (error) return { error: translate(error) };
-  redirect("/pipeline");
+  redirect(sanitizeNext(str(formData, "next")) ?? "/pipeline");
 }
 
 export async function register(_prev: AuthState, formData: FormData): Promise<AuthState> {
@@ -79,6 +80,6 @@ export async function register(_prev: AuthState, formData: FormData): Promise<Au
   if (data.user && data.user.identities?.length === 0) {
     return { error: "Tento e-mail je už zaregistrovaný. Zkus se přihlásit." };
   }
-  if (data.session) redirect("/pipeline");
+  if (data.session) redirect(sanitizeNext(str(formData, "next")) ?? "/pipeline");
   return { message: "Účet je vytvořený. Potvrď e-mail odkazem, který jsme ti poslali, a pak se přihlas." };
 }

@@ -1,9 +1,11 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { getSupabaseEnv } from "./env";
+import { sanitizeNext } from "@/lib/oauth/pure";
 
 // /api si ověřuje API klíč samo (Authorization: Bearer), cookies session se tu nepoužívá
-const PUBLIC_PREFIXES = ["/login", "/registrace", "/auth", "/api"];
+// OAuth: discovery, registrace, token a revoke jsou veřejné (volá je klient), /oauth/authorize vyžaduje přihlášení
+const PUBLIC_PREFIXES = ["/login", "/registrace", "/auth", "/api", "/.well-known", "/oauth/register", "/oauth/token", "/oauth/revoke"];
 
 /** Obnoví Supabase session v cookies a přesměruje nepřihlášené na /login. */
 export async function updateSession(request: NextRequest) {
@@ -33,7 +35,11 @@ export async function updateSession(request: NextRequest) {
     return r;
   };
 
-  if (!isAuthed && !isPublic) return redirect("/login");
-  if (isAuthed && (path === "/login" || path === "/registrace")) return redirect("/pipeline");
+  if (!isAuthed && !isPublic) {
+    // po přihlášení se vrátíme tam, kam uživatel mířil (např. na souhlas s OAuth připojením)
+    const back = sanitizeNext(path + request.nextUrl.search);
+    return redirect(back && back !== "/" ? `/login?next=${encodeURIComponent(back)}` : "/login");
+  }
+  if (isAuthed && (path === "/login" || path === "/registrace")) return redirect(sanitizeNext(request.nextUrl.searchParams.get("next")) ?? "/pipeline");
   return response;
 }

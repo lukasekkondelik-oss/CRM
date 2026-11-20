@@ -34,7 +34,9 @@ const defaults = { deals: { currency: 'CZK', status: 'open', value: 0, stage_cha
 http.createServer((req, res) => {
   if (req.method === 'OPTIONS') { res.writeHead(204, CORS); return res.end(); }
   let body = ''; req.on('data', (c) => (body += c)); req.on('end', () => {
-    const url = new URL(req.url, 'http://x'); const m = url.pathname.match(/^\/rest\/v1\/([a-z_]+)$/);
+    const url = new URL(req.url, 'http://x');
+    if (url.pathname === '/auth/v1/user') { return seed.authUser ? send(res, 200, seed.authUser) : send(res, 401, { message: 'no user' }); }
+    const m = url.pathname.match(/^\/rest\/v1\/([a-z_]+)$/);
     const entry = { m: req.method, t: m && m[1], u: decodeURIComponent(url.search), b: body ? JSON.parse(body) : null }; fs.appendFileSync(LOG, JSON.stringify(entry) + '\n');
     if (!m) return send(res, 404, { message: 'nenalezeno' });
     const table = m[1]; if (!T[table]) T[table] = [];

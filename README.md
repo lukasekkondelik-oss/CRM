@@ -61,9 +61,21 @@ claude mcp add --transport http nexdeals https://TVOJE-DOMENA/api/mcp --header "
 - Server používá service role (obchází RLS), proto je **každý dotaz explicitně omezený na `workspace_id` klíče**
   a test `npm run test:api` to u všech dotazů automaticky kontroluje.
 - MCP záměrně nenabízí mazání dealů, osob ani firem. Limit: 120 požadavků/min na klíč.
-- Webový konektor claude.ai vyžaduje OAuth, to zatím není podporované.
 
-Testy: `npm test` (jednotkové), `npm run test:api` (e2e API a MCP proti falešnému PostgREST).
+### claude.ai (webový konektor, OAuth)
+
+Bez klíčů a terminálu: v claude.ai → **Nastavení → Konektory → Přidat vlastní konektor** zadej adresu
+`https://TVOJE-DOMENA/api/mcp` (pole OAuth Client ID/Secret nech prázdná), klikni **Připojit**, přihlas se do nexdeals
+a na stránce souhlasu zvol *Jen čtení* nebo *Čtení a zápis*. Přístup lze kdykoli odvolat v Nastavení → API a Claude.
+
+- Implementace OAuth 2.1 podle MCP specifikace: discovery (`/.well-known/oauth-protected-resource`, `/.well-known/oauth-authorization-server`),
+  dynamická registrace klientů (`/oauth/register`), `/oauth/authorize` (souhlas), `/oauth/token`, `/oauth/revoke`.
+- Jen veřejní klienti s **PKCE (S256)**; autorizační kód je jednorázový (10 min), access token platí 1 hodinu,
+  refresh token se při každém použití **rotuje** a jeho znovupoužití odvolá celý přístup.
+- Souhlas dává přihlášený uživatel a volí oprávnění; tokeny jednají jeho jménem. V DB jsou jen SHA-256 otisky.
+- Vyžaduje migraci `20261121000000_oauth.sql` (je součástí `supabase/manual/apply_pending.sql`).
+
+Testy: `npm test` (jednotkové), `npm run test:api` (e2e API a MCP proti falešnému PostgREST), `bash tests/api/run-oauth.sh` (e2e OAuth s prohlížečem a klientským kódem MCP SDK).
 
 
 - **Fáze 7** – polish: skeletony všech sekcí, chybové stránky, tmavý toast, hlavičky zabezpečení, ikona, skip-link,

@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import { generateApiKey, keyDisplayPrefix, sha256Hex } from "@/lib/api/key-utils";
-import type { ApiKeyRow } from "@/lib/data/settings";
+import type { ApiKeyRow, OAuthGrantRow } from "@/lib/data/settings";
 import { createClient } from "@/lib/supabase/client";
 import { formatDate, formatDateTime } from "@/lib/format";
 
@@ -19,6 +19,8 @@ interface Props {
   apiKeys: ApiKeyRow[];
   apiKeysAvailable: boolean;
   apiConfigured: boolean;
+  oauthAvailable: boolean;
+  oauthGrants: OAuthGrantRow[];
   endpoints: { method: string; path: string; summary: string; scope: string }[];
   mcpTools: { name: string; description: string; write: boolean }[];
 }
@@ -40,7 +42,7 @@ function CopyBlock({ label, text }: { label: string; text: string }) {
 const inDays = (n: number) => new Date(Date.now() + n * 864e5).toISOString();
 const EXPIRY: [string, number | null][] = [["Bez expirace", null], ["30 dní", 30], ["90 dní", 90], ["1 rok", 365]];
 
-export function ApiSettings({ apiKeys: initial, apiKeysAvailable, apiConfigured, endpoints, mcpTools }: Props) {
+export function ApiSettings({ apiKeys: initial, apiKeysAvailable, apiConfigured, oauthAvailable, oauthGrants: initialGrants, endpoints, mcpTools }: Props) {
   const [keys, setKeys] = useState(initial);
   const [name, setName] = useState("");
   const [scope, setScope] = useState<"rw" | "r">("rw");
@@ -48,6 +50,8 @@ export function ApiSettings({ apiKeys: initial, apiKeysAvailable, apiConfigured,
   const [busy, setBusy] = useState(false);
   const [fresh, setFresh] = useState<string | null>(null);
   const [revoke, setRevoke] = useState<ApiKeyRow | null>(null);
+  const [grants, setGrants] = useState(initialGrants);
+  const [revokeGrant, setRevokeGrant] = useState<OAuthGrantRow | null>(null);
   const sb = createClient();
   // na serveru prázdné, v prohlížeči skutečná adresa (bez hydration mismatch)
   const origin = useSyncExternalStore(() => () => {}, () => window.location.origin, () => "");
@@ -76,6 +80,19 @@ export function ApiSettings({ apiKeys: initial, apiKeysAvailable, apiConfigured,
     if (error) return void toast.error("Klíč se nepodařilo odvolat.");
     setKeys((ks) => ks.map((x) => (x.id === key.id ? { ...x, revoked_at: new Date().toISOString() } : x)));
     toast.success("Klíč odvolán – přestal fungovat okamžitě");
+  }
+
+  async function doRevokeGrant(g: OAuthGrantRow) {
+    const { error } = await sb.from("oauth_tokens").update({ revoked_at: new Date().toISOString() }).eq("id", g.id);
+    if (error) return void toast.error("Přístup se nepodařilo odvolat.");
+    setGrants((gs) => gs.map((x) => (x.id === g.id ? { ...x, revoked_at: new Date().toISOString() } : x)));
+    toast.success("Přístup odvolán – aplikace ztratila přístup okamžitě");
+  }
+
+  async function removeGrant(g: OAuthGrantRow) {
+    const { error } = await sb.from("oauth_tokens").delete().eq("id", g.id);
+    if (error) return void toast.error("Záznam se nepodařilo smazat.");
+    setGrants((gs) => gs.filter((x) => x.id !== g.id));
   }
 
   async function remove(key: ApiKeyRow) {
@@ -150,12 +167,53 @@ export function ApiSettings({ apiKeys: initial, apiKeysAvailable, apiConfigured,
       </Card>
 
       <Card>
-        <CardHeader><CardTitle className="flex items-center gap-2"><Bot className="size-4" /> Připojení Claude (MCP)</CardTitle>
+        <CardHeader><CardTitle className="flex items-center gap-2"><Bot className="size-4" /> claude.ai – webový konektor (OAuth)</CardTitle>
+          <CardDescription>Nejjednodušší cesta: bez klíčů a terminálu. Claude se připojí přihlášením a ty schválíš, co smí dělat.</CardDescription></CardHeader>
+        <CardContent className="flex flex-col gap-4">
+          <ol className="list-decimal space-y-1 pl-5 text-sm">
+            <li>V claude.ai otevři <b>Nastavení → Konektory → Přidat vlastní konektor</b>.</li>
+            <li>Název: <code>nexdeals</code>, adresa serveru: <code>{origin}/api/mcp</code>. Pole pro OAuth Client ID a Secret nech prázdná.</li>
+            <li>Klikni na <b>Připojit</b>, přihlas se do nexdeals a na stránce souhlasu zvol <b>Jen čtení</b>, nebo <b>Čtení a zápis</b>.</li>
+          </ol>
+          <CopyBlock label="Adresa serveru" text={`${origin}/api/mcp`} />
+          {!oauthAvailable ? (
+            <p role="alert" className="rounded-lg bg-warning-soft px-3 py-3 text-sm text-warning">OAuth zatím není zapnuté: spusť v Supabase SQL Editoru soubor <code>supabase/manual/apply_pending.sql</code> (obsahuje i OAuth migraci).</p>
+          ) : grants.length === 0 ? (
+            <p className="rounded-lg border border-dashed px-4 py-6 text-center text-sm text-muted-foreground">Zatím není připojená žádná aplikace.</p>
+          ) : (
+            <div>
+              <p className="mb-2 text-sm font-medium">Připojené aplikace</p>
+              <ul className="divide-y rounded-lg border">
+                {grants.map((g) => {
+                  const expired = new Date(g.refresh_expires_at) < new Date();
+                  const dead = !!g.revoked_at || expired;
+                  return (
+                    <li key={g.id} className="flex flex-wrap items-center gap-3 px-3 py-3">
+                      <div className={`min-w-0 flex-1 ${dead ? "opacity-60" : ""}`}>
+                        <p className="truncate text-sm font-medium">{g.client_name}</p>
+                        <p className="text-xs text-muted-foreground">Připojeno {formatDate(g.created_at)} · {g.last_used_at ? `naposledy použito ${formatDateTime(g.last_used_at)}` : "zatím nepoužito"}</p>
+                      </div>
+                      <Badge variant={g.scopes.includes("write") ? "default" : "muted"}>{g.scopes.includes("write") ? "Čtení + zápis" : "Jen čtení"}</Badge>
+                      {g.revoked_at ? <Badge variant="danger">Odvoláno</Badge> : expired ? <Badge variant="danger">Vypršelo</Badge> : <Badge variant="success">Aktivní</Badge>}
+                      {dead
+                        ? <button type="button" aria-label={`Smazat záznam ${g.client_name}`} onClick={() => removeGrant(g)} className="rounded p-1.5 text-muted-foreground hover:bg-muted hover:text-danger"><Trash2 className="size-4" /></button>
+                        : <Button variant="outline" size="sm" onClick={() => setRevokeGrant(g)}>Odvolat</Button>}
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader><CardTitle className="flex items-center gap-2"><Bot className="size-4" /> Připojení Claude Code a Desktop (MCP + klíč)</CardTitle>
           <CardDescription>Claude pak umí číst a upravovat tvoje CRM: „Co mám dnes udělat?“, „Přidej deal Alfa Finance za 80 000 do fáze Kontaktován“, „Dokonči hovor a naplánuj další krok za týden“. Mazání dealů, osob a firem Claude nemá k dispozici.</CardDescription></CardHeader>
         <CardContent className="flex flex-col gap-4">
           <CopyBlock label="Claude Code (terminál)" text={`claude mcp add --transport http nexdeals ${origin}/api/mcp --header "Authorization: Bearer ${k}"`} />
           <CopyBlock label="Claude Desktop – claude_desktop_config.json (přes mcp-remote)" text={JSON.stringify({ mcpServers: { nexdeals: { command: "npx", args: ["-y", "mcp-remote", `${origin}/api/mcp`, "--header", "Authorization:${NEXDEALS_AUTH}"], env: { NEXDEALS_AUTH: `Bearer ${k}` } } } }, null, 2)} />
-          <p className="text-xs text-muted-foreground">Klíč vlož místo <code>nxd_VÁŠ_KLÍČ</code>{fresh ? " (právě vytvořený je už doplněný)" : ""}. Pro volné zkoumání dat doporučuju klíč <b>jen pro čtení</b>. Webový konektor claude.ai vyžaduje přihlášení přes OAuth, to zatím není podporované – použij Claude Code nebo Claude Desktop.</p>
+          <p className="text-xs text-muted-foreground">Klíč vlož místo <code>nxd_VÁŠ_KLÍČ</code>{fresh ? " (právě vytvořený je už doplněný)" : ""}. Pro volné zkoumání dat doporučuju klíč <b>jen pro čtení</b>. Pro claude.ai ve webu použij konektor výše (bez klíče).</p>
           <details className="text-sm"><summary className="cursor-pointer font-medium">Nástroje, které Claude dostane ({mcpTools.length})</summary>
             <ul className="mt-2 divide-y rounded-lg border text-xs">{mcpTools.map((t) => (
               <li key={t.name} className="flex gap-3 px-3 py-2"><code className="w-40 shrink-0 font-medium">{t.name}</code><span className="flex-1 text-muted-foreground">{t.description}</span><Badge variant={t.write ? "warning" : "muted"}>{t.write ? "zápis" : "čtení"}</Badge></li>
@@ -175,6 +233,10 @@ export function ApiSettings({ apiKeys: initial, apiKeysAvailable, apiConfigured,
             ))}</ul></details>
         </CardContent>
       </Card>
+
+      <ConfirmDialog open={!!revokeGrant} onOpenChange={(o) => !o && setRevokeGrant(null)} title={`Odvolat přístup aplikace ${revokeGrant?.client_name ?? ""}?`} confirmLabel="Odvolat"
+        description="Aplikace ztratí přístup okamžitě. Pokud ji budeš chtít použít znovu, připojíš ji znovu a schválíš oprávnění."
+        onConfirm={async () => { if (revokeGrant) await doRevokeGrant(revokeGrant); }} />
 
       <ConfirmDialog open={!!revoke} onOpenChange={(o) => !o && setRevoke(null)} title={`Odvolat klíč ${revoke?.name ?? ""}?`} confirmLabel="Odvolat"
         description="Všechno, co ho používá (Claude, skripty), přestane okamžitě fungovat. Odvolání nejde vrátit zpět, vytvoř nový klíč."
