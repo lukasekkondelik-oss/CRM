@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { BarChart3, Briefcase, Building2, CalendarCheck, CornerDownLeft, Kanban, Loader2, Search, Settings, User, Users, type LucideIcon } from "lucide-react";
+import { BarChart3, Briefcase, Building2, CalendarCheck, CornerDownLeft, Kanban, Loader2, Search, Settings, Truck, User, Users, type LucideIcon } from "lucide-react";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { searchAll, type GlobalResults } from "@/lib/contacts/search";
 import { cn } from "@/lib/utils";
@@ -12,6 +12,7 @@ interface Item { id: string; group: string; label: string; sub?: string; href: s
 const NAV: Item[] = [
   { id: "n-dash", group: "Přejít na", label: "Dashboard", href: "/dashboard", icon: BarChart3 },
   { id: "n-pipe", group: "Přejít na", label: "Pipeline", href: "/pipeline", icon: Kanban },
+  { id: "n-del", group: "Přejít na", label: "Realizace", href: "/realizace", icon: Truck },
   { id: "n-act", group: "Přejít na", label: "Aktivity", href: "/aktivity", icon: CalendarCheck },
   { id: "n-per", group: "Přejít na", label: "Osoby", href: "/osoby", icon: Users },
   { id: "n-org", group: "Přejít na", label: "Firmy", href: "/firmy", icon: Building2 },

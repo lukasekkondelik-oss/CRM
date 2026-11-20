@@ -95,3 +95,8 @@ Osoby a firmy mají štítky ze **stejné sady** jako dealy (správa v Nastaven�
 migrace `20261123000000_contact_labels.sql`, test `supabase/tests/contact_labels_test.sql`). V detailu se přidávají/odebírají,
 v seznamech Osoby/Firmy je filtr podle štítku (`?label=`), štítky jsou v exportu CSV. API: `PUT /persons/{id}/labels`,
 `PUT /organizations/{id}/labels`, filtr `label_id` v seznamech; MCP nástroj `set_contact_labels` (podle názvu) a `search_contacts` s `label`.
+
+## Realizace (levé menu)
+
+`/realizace` – přehled vyhraných dealů, na kterých se ještě pracuje, a běžících předplatných: počty a hodnota, další krok,
+u předplatného datum „Běží do“ se zvýrazněním „Do 30 dní“ / „Skončilo“. Číslo u položky v menu = počet takových dealů.

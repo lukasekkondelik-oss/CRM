@@ -17,9 +17,10 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   // Odznak u „Aktivity“: moje nedokončené aktivity dnes a po termínu
   const today = todayInPrague();
-  const [overdueRes, todayRes] = await Promise.all([
+  const [overdueRes, todayRes, deliveryRes] = await Promise.all([
     supabase.from("activities").select("id", { count: "exact", head: true }).eq("done", false).eq("assigned_to", user.id).lt("due_date", today),
     supabase.from("activities").select("id", { count: "exact", head: true }).eq("done", false).eq("assigned_to", user.id).eq("due_date", today),
+    supabase.from("deals").select("id", { count: "exact", head: true }).eq("status", "won").in("delivery_status", ["in_progress", "ongoing"]),
   ]);
 
   const workspace = Array.isArray(profile.workspaces) ? profile.workspaces[0] : profile.workspaces;
@@ -34,6 +35,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       }}
       workspaceName={workspace?.name ?? "Workspace"}
       activityBadge={{ today: todayRes.count ?? 0, overdue: overdueRes.count ?? 0 }}
+      deliveryCount={deliveryRes.count ?? 0}
     >
       {children}
     </AppShell>

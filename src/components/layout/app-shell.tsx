@@ -20,12 +20,13 @@ export interface ActivityBadge { today: number; overdue: number }
 
 interface Props {
   activityBadge?: ActivityBadge;
+  deliveryCount?: number;
   user: { fullName: string; email: string | null; avatarUrl: string | null; role: "admin" | "member" };
   workspaceName: string;
   children: React.ReactNode;
 }
 
-function SidebarContent({ user, workspaceName, activityBadge, onNavigate, onSearch }: Omit<Props, "children"> & { onNavigate?: () => void; onSearch: () => void }) {
+function SidebarContent({ user, workspaceName, activityBadge, deliveryCount, onNavigate, onSearch }: Omit<Props, "children"> & { onNavigate?: () => void; onSearch: () => void }) {
   const pathname = usePathname();
   return (
     <div className="flex h-full flex-col">
@@ -62,6 +63,10 @@ function SidebarContent({ user, workspaceName, activityBadge, onNavigate, onSear
             >
               <Icon className="size-[18px]" />
               <span className="flex-1">{label}</span>
+              {href === "/realizace" && !!deliveryCount && deliveryCount > 0 && (
+                <span title={`Dealů v realizaci a předplatných: ${deliveryCount}`} aria-label={`V realizaci: ${deliveryCount}`}
+                  className="rounded-full bg-muted px-1.5 py-0.5 text-[11px] font-semibold leading-none text-muted-foreground">{deliveryCount}</span>
+              )}
               {href === "/aktivity" && activityBadge && activityBadge.today + activityBadge.overdue > 0 && (
                 <span
                   title={`Dnes: ${activityBadge.today}, po termínu: ${activityBadge.overdue}`}
@@ -103,7 +108,7 @@ function SidebarContent({ user, workspaceName, activityBadge, onNavigate, onSear
   );
 }
 
-export function AppShell({ user, workspaceName, activityBadge, children }: Props) {
+export function AppShell({ user, workspaceName, activityBadge, deliveryCount, children }: Props) {
   const [open, setOpen] = useState(false);
   const [searchOpen, setSearchOpenState] = useState(false);
   const [searchMounted, setSearchMounted] = useState(false);
@@ -122,7 +127,7 @@ export function AppShell({ user, workspaceName, activityBadge, children }: Props
       <a href="#obsah" className="sr-only z-[60] rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground focus:not-sr-only focus:fixed focus:left-3 focus:top-3">Přeskočit na obsah</a>
       {/* Desktop sidebar */}
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 border-r bg-sidebar lg:block">
-        <SidebarContent user={user} workspaceName={workspaceName} activityBadge={activityBadge} onSearch={() => setSearchOpen(true)} />
+        <SidebarContent user={user} workspaceName={workspaceName} activityBadge={activityBadge} deliveryCount={deliveryCount} onSearch={() => setSearchOpen(true)} />
       </aside>
 
       {/* Mobilní horní lišta */}
@@ -152,7 +157,7 @@ export function AppShell({ user, workspaceName, activityBadge, children }: Props
             >
               <X />
             </Button>
-            <SidebarContent user={user} workspaceName={workspaceName} activityBadge={activityBadge} onNavigate={() => setOpen(false)} onSearch={() => setSearchOpen(true)} />
+            <SidebarContent user={user} workspaceName={workspaceName} activityBadge={activityBadge} deliveryCount={deliveryCount} onNavigate={() => setOpen(false)} onSearch={() => setSearchOpen(true)} />
           </aside>
         </div>
       )}
