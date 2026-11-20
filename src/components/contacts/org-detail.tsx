@@ -12,7 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Select } from "@/components/ui/select";
 import { createClient } from "@/lib/supabase/client";
-import { telHref } from "@/lib/contacts/search-util";
+import { telHref, webHref } from "@/lib/contacts/search-util";
 import { personName } from "@/lib/deals/helpers";
 import { formatDate } from "@/lib/format";
 import type { loadOrg } from "@/lib/data/contacts";
@@ -25,7 +25,6 @@ import { NewPersonButton } from "./person-form";
 
 type Data = NonNullable<Awaited<ReturnType<typeof loadOrg>>>;
 
-const webHref = (w: string) => (/^https?:\/\//i.test(w) ? w : `https://${w}`);
 const linkBtn = "rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground";
 
 export function OrgDetail({ data, today }: { data: Data; today: string }) {

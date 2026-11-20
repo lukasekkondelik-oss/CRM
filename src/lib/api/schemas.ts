@@ -59,7 +59,7 @@ export const dealLabels = z.object({ label_ids: z.array(id).max(50) });
 export const personListQuery = z.object({ q: text(100).optional(), organization_id: id.optional(), owner_id: z.union([id, z.literal("me")]).optional(), limit, offset });
 const personFields = {
   first_name: text(100).optional(), last_name: text(100).optional(),
-  email: emailField, phone: text(50).nullable().optional(), position: text(100).nullable().optional(),
+  email: emailField, phone: text(50).nullable().optional(), position: text(100).nullable().optional(), web: text(200).nullable().optional(),
   owner_id: id.nullable().optional(),
 };
 export const personCreate = z.object({ ...personFields, organization_id: id.nullable().optional(), organization_name: text(200).optional() })

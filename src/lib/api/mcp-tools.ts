@@ -88,7 +88,7 @@ export const MCP_TOOLS: McpTool[] = [
     schema: z.object({ type: z.enum(["person", "organization"]), id }),
     run: (ctx, a) => (a.type === "person" ? getPerson(ctx, a.id) : getOrg(ctx, a.id)) }),
   tool({ name: "create_person", description: "Vytvoří osobu (firma se zadá jménem, chybějící se vytvoří).", write: true,
-    schema: z.object({ first_name: z.string().optional(), last_name: z.string().optional(), email: z.string().optional(), phone: z.string().optional(), position: z.string().optional(), organization_name: z.string().optional() }),
+    schema: z.object({ first_name: z.string().optional(), last_name: z.string().optional(), email: z.string().optional(), phone: z.string().optional(), position: z.string().optional(), web: z.string().optional(), organization_name: z.string().optional() }),
     run: (ctx, a) => createPerson(ctx, personCreate.parse(a)) }),
   tool({ name: "create_organization", description: "Vytvoří firmu (IČO má 8 číslic).", write: true,
     schema: z.object({ name: z.string().min(1), ico: z.string().optional(), web: z.string().optional(), address: z.string().optional() }),

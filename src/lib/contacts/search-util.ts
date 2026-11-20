@@ -12,7 +12,8 @@ export function wordFilters(q: string, columns: string[]): string[] {
     .map((w) => columns.map((c) => `${c}.ilike.*${w}*`).join(","));
 }
 
-export const PERSON_SEARCH_COLUMNS = ["first_name", "last_name", "email", "phone", "position"];
+export const PERSON_SEARCH_COLUMNS = ["first_name", "last_name", "email", "phone", "position", "web"];
 export const ORG_SEARCH_COLUMNS = ["name", "ico", "web"];
 
+export const webHref = (w: string) => (/^https?:\/\//i.test(w) ? w : `https://${w}`);
 export const telHref = (phone: string) => `tel:${phone.replace(/[^\d+]/g, "")}`;

@@ -12,7 +12,7 @@ import { NewPersonButton } from "@/components/contacts/person-form";
 import { SearchBox } from "@/components/contacts/list-toolbar";
 import { listHref, Pagination, SortTh, Th } from "@/components/contacts/list-parts";
 import { listPersons, parseListParams } from "@/lib/data/contacts";
-import { telHref } from "@/lib/contacts/search-util";
+import { telHref, webHref } from "@/lib/contacts/search-util";
 import { formatDate } from "@/lib/format";
 import { personName } from "@/lib/deals/helpers";
 
@@ -39,7 +39,7 @@ export default async function PersonsPage({ searchParams }: { searchParams: Prom
             <EmptyState icon={Users} title={`Nic nenalezeno pro „${p.q}“`} description="Zkus jiné slovo nebo hledání zruš." action={<Link href={BASE} className="text-sm font-medium text-primary hover:underline">Zrušit hledání</Link>} />
           ) : (
             <Card className="overflow-x-auto">
-              <table className="w-full min-w-[860px] text-sm">
+              <table className="w-full min-w-[960px] text-sm">
                 <thead className="border-b bg-muted/40">
                   <tr>
                     <SortTh base={BASE} p={p} k="name">Jméno</SortTh>
@@ -47,6 +47,7 @@ export default async function PersonsPage({ searchParams }: { searchParams: Prom
                     <SortTh base={BASE} p={p} k="email">E-mail</SortTh>
                     <Th>Telefon</Th>
                     <Th>Pozice</Th>
+                    <Th>Web</Th>
                     <Th>Vlastník</Th>
                     <Th>Otevřené dealy</Th>
                     <SortTh base={BASE} p={p} k="created_at">Vytvořeno</SortTh>
@@ -62,6 +63,7 @@ export default async function PersonsPage({ searchParams }: { searchParams: Prom
                         <td className="px-3 py-2.5">{r.email ? <a href={`mailto:${r.email}`} className="text-primary hover:underline">{r.email}</a> : "—"}</td>
                         <td className="whitespace-nowrap px-3 py-2.5">{r.phone ? <a href={telHref(r.phone)} className="text-primary hover:underline">{r.phone}</a> : "—"}</td>
                         <td className="px-3 py-2.5 text-muted-foreground">{r.position ?? "—"}</td>
+                        <td className="px-3 py-2.5">{r.web ? <a href={webHref(r.web)} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">{r.web}</a> : "—"}</td>
                         <td className="px-3 py-2.5">{owner ? <span className="flex items-center gap-2"><Avatar name={owner.full_name} src={owner.avatar_url} className="size-6 text-[10px]" /><span className="hidden xl:inline">{owner.full_name}</span></span> : "—"}</td>
                         <td className="px-3 py-2.5">{r.openDeals > 0 ? <Badge>{r.openDeals}</Badge> : <span className="text-muted-foreground">0</span>}</td>
                         <td className="whitespace-nowrap px-3 py-2.5 text-muted-foreground">{formatDate(r.created_at)}</td>

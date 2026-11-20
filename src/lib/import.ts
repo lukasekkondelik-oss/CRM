@@ -14,6 +14,7 @@ export const IMPORT_FIELDS: Record<EntityKind, FieldDef[]> = {
     { key: "email", label: "E-mail", synonyms: ["email", "e mail", "mail"] },
     { key: "phone", label: "Telefon", synonyms: ["telefon", "mobil", "phone", "tel"] },
     { key: "position", label: "Pozice", synonyms: ["pozice", "funkce", "position", "job title", "title"] },
+    { key: "web", label: "Web", synonyms: ["web", "www", "website", "url", "domena"] },
     { key: "organization", label: "Firma", synonyms: ["firma", "spolecnost", "organizace", "organization", "company"] },
     { key: "owner", label: "Vlastník", synonyms: ["vlastnik", "owner", "obchodnik", "prirazeno"] },
   ],
@@ -79,7 +80,7 @@ export function buildRows(kind: EntityKind, rows: string[][], mapping: Record<st
       const email = g("email").toLowerCase();
       if (email && !EMAIL_RE.test(email)) errors.push(`neplatný e-mail „${g("email")}“`);
       data.email = email && EMAIL_RE.test(email) ? email : null;
-      text("phone"); text("position"); text("organization"); text("owner");
+      text("phone"); text("position"); text("web"); text("organization"); text("owner");
     } else if (kind === "orgs") {
       if (!g("name")) errors.push("chybí název");
       data.name = g("name");

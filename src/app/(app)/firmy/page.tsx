@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Building2, Download } from "lucide-react";
+import { webHref } from "@/lib/contacts/search-util";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
@@ -17,7 +18,6 @@ import { formatDate } from "@/lib/format";
 export const metadata: Metadata = { title: "Firmy" };
 const BASE = "/firmy";
 
-const webHref = (w: string) => (/^https?:\/\//i.test(w) ? w : `https://${w}`);
 
 export default async function OrgsPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const p = parseListParams(await searchParams, ["name", "ico", "created_at"], "name");

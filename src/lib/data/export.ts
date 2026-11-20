@@ -34,8 +34,8 @@ export async function exportRows(kind: string, q: string): Promise<{ header: str
       return query.order("last_name").order("id").range(f, t);
     });
     return {
-      header: ["Jméno", "Příjmení", "E-mail", "Telefon", "Pozice", "Firma", "Vlastník", "Vytvořeno"],
-      rows: rows.map((p) => [p.first_name, p.last_name, p.email, p.phone, p.position, p.organization_id ? orgs.get(p.organization_id) ?? "" : "", p.owner_id ? members.get(p.owner_id) ?? "" : "", date(p.created_at)]),
+      header: ["Jméno", "Příjmení", "E-mail", "Telefon", "Pozice", "Web", "Firma", "Vlastník", "Vytvořeno"],
+      rows: rows.map((p) => [p.first_name, p.last_name, p.email, p.phone, p.position, p.web, p.organization_id ? orgs.get(p.organization_id) ?? "" : "", p.owner_id ? members.get(p.owner_id) ?? "" : "", date(p.created_at)]),
     };
   }
   if (kind === "firmy") {

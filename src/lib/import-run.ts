@@ -122,7 +122,7 @@ export async function runImport(ctx: ImportContext, onProgress: (done: number, t
       if (ctx.skipDuplicates && email && (existing.has(email) || seen.has(email))) { res.skipped++; tick(1); continue; }
       if (email) seen.add(email);
       items.push({ line: r.line, row: {
-        first_name: r.data.first_name ?? "", last_name: r.data.last_name ?? "", email, phone: r.data.phone, position: r.data.position,
+        first_name: r.data.first_name ?? "", last_name: r.data.last_name ?? "", email, phone: r.data.phone, position: r.data.position, web: r.data.web,
         organization_id: r.data.organization ? orgIds.get(nameKey(String(r.data.organization))) ?? null : null, owner_id: owner(r.data.owner),
       } });
     }

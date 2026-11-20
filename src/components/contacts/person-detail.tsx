@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { ArrowLeft, Briefcase, Building2, ExternalLink, Mail, Phone, Trash2, UserCog } from "lucide-react";
+import { ArrowLeft, Briefcase, Building2, ExternalLink, Globe, Mail, Phone, Trash2, UserCog } from "lucide-react";
 import { Avatar } from "@/components/ui/avatar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Combobox } from "@/components/ui/combobox";
@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/select";
 import { createClient } from "@/lib/supabase/client";
 import { searchOrgs } from "@/lib/contacts/search";
-import { telHref } from "@/lib/contacts/search-util";
+import { telHref, webHref } from "@/lib/contacts/search-util";
 import { createOrgQuick } from "@/lib/deals/mutations";
 import { personName, type OrgLite } from "@/lib/deals/helpers";
 import { formatDate } from "@/lib/format";
@@ -63,6 +63,7 @@ export function PersonDetail({ data, today }: { data: Data; today: string }) {
             {org && <Link href={`/firmy/${org.id}`} className="hover:text-primary hover:underline">{org.name}</Link>}
             {person.email && <a href={`mailto:${person.email}`} className="text-primary hover:underline">{person.email}</a>}
             {person.phone && <a href={telHref(person.phone)} className="text-primary hover:underline">{person.phone}</a>}
+            {person.web && <a href={webHref(person.web)} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">{person.web}</a>}
           </p>
         </div>
         <Button variant="ghost" size="icon" aria-label="Smazat osobu" onClick={() => setDeleteOpen(true)}><Trash2 /></Button>
@@ -81,6 +82,10 @@ export function PersonDetail({ data, today }: { data: Data; today: string }) {
             </Row>
             <Row icon={Briefcase} label="Pozice">
               <InlineText label="Pozice" value={person.position} placeholder="Přidat pozici" onSave={(v) => patch({ position: v })} />
+            </Row>
+            <Row icon={Globe} label="Web">
+              <InlineText label="Web" value={person.web} placeholder="Přidat web" onSave={(v) => patch({ web: v })}
+                action={person.web && <a href={webHref(person.web)} target="_blank" rel="noopener noreferrer" aria-label="Otevřít web" className={linkBtn}><Globe className="size-3.5" /></a>} />
             </Row>
             <Row icon={Building2} label="Firma">
               <div className="flex items-center gap-1">

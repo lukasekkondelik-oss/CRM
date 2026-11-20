@@ -277,3 +277,7 @@ grant update (revoked_at) on public.oauth_tokens to authenticated;
 grant delete on public.oauth_tokens to authenticated;
 
 
+
+
+-- ===== person_web =====
+alter table public.persons add column if not exists web text;

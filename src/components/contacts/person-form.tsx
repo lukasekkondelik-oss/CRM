@@ -40,7 +40,7 @@ export function NewPersonButton({ label = "Nová osoba", variant = "default", ..
 
 function Form({ members, currentUserId, defaultOrg, goToDetail = true, onClose }: Props & { onClose: () => void }) {
   const router = useRouter();
-  const [f, setF] = useState({ first_name: "", last_name: "", email: "", phone: "", position: "" });
+  const [f, setF] = useState({ first_name: "", last_name: "", email: "", phone: "", position: "", web: "" });
   const [orgs, setOrgs] = useState<OrgLite[]>(defaultOrg ? [defaultOrg] : []);
   const [orgId, setOrgId] = useState<string | null>(defaultOrg?.id ?? null);
   const [ownerId, setOwnerId] = useState(currentUserId);
@@ -54,7 +54,7 @@ function Form({ members, currentUserId, defaultOrg, goToDetail = true, onClose }
     setBusy(true);
     const { data, error } = await createClient().from("persons").insert({
       first_name: f.first_name.trim(), last_name: f.last_name.trim(),
-      email: f.email.trim() || null, phone: f.phone.trim() || null, position: f.position.trim() || null,
+      email: f.email.trim() || null, phone: f.phone.trim() || null, position: f.position.trim() || null, web: f.web.trim() || null,
       organization_id: orgId, owner_id: ownerId || null,
     }).select("id").single();
     setBusy(false);
@@ -90,6 +90,7 @@ function Form({ members, currentUserId, defaultOrg, goToDetail = true, onClose }
           />
         </div>
       </div>
+      <div className="flex flex-col gap-1.5"><Label htmlFor="p-web">Web</Label><Input id="p-web" value={f.web} onChange={set("web")} placeholder="jannovak.cz" /></div>
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="p-ow">Vlastník</Label>
         <Select id="p-ow" value={ownerId} onChange={(e) => setOwnerId(e.target.value)}>

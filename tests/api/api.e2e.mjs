@@ -16,7 +16,7 @@ const seed = { tables: {
   pipelines: [{ id: P1, workspace_id: W1, name: 'Prodej', position: 0 }, { id: P2, workspace_id: W2, name: 'Cizí pipeline', position: 0 }],
   stages: [{ id: S1, pipeline_id: P1, name: 'Lead', position: 0, probability: 10, rotting_days: 14 }, { id: S2, pipeline_id: P1, name: 'Kontaktován', position: 1, probability: 20, rotting_days: 14 }, { id: S3, pipeline_id: P1, name: 'Schůzka', position: 2, probability: 40, rotting_days: 14 }, { id: S4, pipeline_id: P2, name: 'Cizí fáze', position: 0, probability: 10, rotting_days: null }],
   deals: [{ id: D2, workspace_id: W2, pipeline_id: P2, stage_id: S4, title: 'Cizí deal', value: 999, currency: 'CZK', status: 'open', person_id: null, organization_id: null, owner_id: U2, expected_close_date: null, lost_reason: null, won_at: null, lost_at: null, stage_changed_at: iso(), position: 0, created_at: iso(), updated_at: iso() }],
-  persons: [{ id: PER2, workspace_id: W2, first_name: 'Cizí', last_name: 'Osoba', email: null, phone: null, position: null, organization_id: null, owner_id: null, created_at: iso() }],
+  persons: [{ id: PER2, workspace_id: W2, first_name: 'Cizí', last_name: 'Osoba', email: null, phone: null, position: null, web: null, organization_id: null, owner_id: null, created_at: iso() }],
   organizations: [{ id: O2, workspace_id: W2, name: 'Cizí s.r.o.', ico: null, web: null, address: null, owner_id: null, created_at: iso() }],
   activities: [{ id: A2, workspace_id: W2, type: 'call', subject: 'Cizí aktivita', note: null, due_date: '2020-01-01', due_time: null, duration_min: null, done: false, done_at: null, deal_id: D2, person_id: null, organization_id: null, assigned_to: U2, created_at: iso() }],
   labels: [{ id: L1, workspace_id: W1, name: 'Horký', color: '#ef4444' }, { id: L2, workspace_id: W2, name: 'Cizí label', color: '#000000' }],
@@ -106,7 +106,7 @@ try {
   r = await api('POST', '/persons', F, { email: 'a@b.cz' }); ok(r.s === 400, 'osoba bez jména → 400');
   r = await api('POST', '/persons', F, { last_name: 'X', email: 'spatny' }); ok(r.s === 400, 'osoba s neplatným e-mailem → 400');
   r = await api('GET', '/persons?q=cern', F); ok(r.s === 200, 'GET /persons?q'); 
-  r = await api('PATCH', `/persons/${per.id}`, F, { phone: '+420 777 111 222', position: '' }); ok(r.s === 200 && r.j.data.phone === '+420 777 111 222' && r.j.data.position === null, 'PATCH osoby (prázdný řetězec → null)');
+  r = await api('PATCH', `/persons/${per.id}`, F, { phone: '+420 777 111 222', position: '', web: 'jannovak.cz' }); ok(r.s === 200 && r.j.data.phone === '+420 777 111 222' && r.j.data.position === null && r.j.data.web === 'jannovak.cz', 'PATCH osoby (prázdný řetězec → null, web)');
   r = await api('GET', `/persons/${per.id}`, F); ok(r.s === 200 && Array.isArray(r.j.data.deals) && Array.isArray(r.j.data.notes), 'detail osoby');
   r = await api('POST', '/organizations', F, { name: 'Gama s.r.o.', ico: '123 456 78', web: 'gama.cz' }); ok(r.s === 201 && r.j.data.ico === '12345678', 'POST /organizations (IČO normalizované)'); const org = r.j.data;
   r = await api('POST', '/organizations', F, { name: 'Špatné', ico: '123' }); ok(r.s === 400, 'neplatné IČO → 400');

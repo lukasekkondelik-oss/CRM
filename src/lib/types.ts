@@ -20,7 +20,7 @@ export interface Organization {
 }
 export interface Person {
   id: string; workspace_id: string; organization_id: string | null; first_name: string;
-  last_name: string; email: string | null; phone: string | null; position: string | null;
+  last_name: string; email: string | null; phone: string | null; position: string | null; web: string | null;
   owner_id: string | null; created_at: string;
 }
 export interface Deal {

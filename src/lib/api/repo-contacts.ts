@@ -5,7 +5,7 @@ import { notFound } from "./errors";
 import { byIds, emptyToNull, me, must, personName, resolveOrg, searchWords, type Ctx, type Row } from "./repo-core";
 import type { orgCreate, orgListQuery, orgUpdate, personCreate, personListQuery, personUpdate } from "./schemas";
 
-const PERSON_COLS = "id, first_name, last_name, email, phone, position, organization_id, owner_id, created_at";
+const PERSON_COLS = "id, first_name, last_name, email, phone, position, web, organization_id, owner_id, created_at";
 const ORG_COLS = "id, name, ico, web, address, owner_id, created_at";
 
 const clean = (o: Row) => Object.fromEntries(Object.entries(o).filter(([, v]) => v !== undefined).map(([k, v]) => [k, emptyToNull(v)]));
