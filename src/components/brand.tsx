@@ -29,7 +29,7 @@ export function Symbol({ className }: { className?: string }) {
 }
 
 /**
- * Logo nexdeals: ikona + wordmark „nexdeals“ (Sora 600) s mint zkoseným čtverečkem místo tečky.
+ * Logo nexdeals: ikona + wordmark „nex“ (tlumená šedomodrá) + „deals“ (text) v Sora 600 s mint zkoseným čtverečkem místo tečky.
  * Finální SVG stačí měnit tady, zbytek aplikace používá jen <Logo />.
  */
 export function Logo({ variant = "full", className }: { variant?: "full" | "mark"; className?: string }) {
@@ -37,9 +37,10 @@ export function Logo({ variant = "full", className }: { variant?: "full" | "mark
   return (
     <span className={cn("flex items-center gap-2", className)}>
       <AppIcon />
-      <span className="font-display text-[17px] font-semibold tracking-[-0.02em] text-foreground">
-        nexdeals
-        <span aria-hidden className="ml-[3px] inline-block size-[5px] -skew-x-12 rounded-[1px] bg-[#95F2D9] align-baseline" />
+      <span className="font-display text-[17px] font-semibold tracking-[-0.02em]">
+        <span className="text-[#8A8FA8] dark:text-[#7E83A3]">nex</span>
+        <span className="text-foreground">deals</span>
+        <span aria-hidden className="ml-[2px] inline-block h-[0.3em] w-[0.34em] -skew-x-12 rounded-[1px] bg-[#95F2D9] align-baseline" />
       </span>
     </span>
   );
